@@ -1,0 +1,14 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    hoe (3.0.6)
+      rake (~> 0.8)
+    rake (0.9.2.2)
+    systemu (2.5.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  hoe (~> 3.0.6)
+  systemu (~> 2.5.2)

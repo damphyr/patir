@@ -1,0 +1,70 @@
+==0.7.3 / 2012-07-25
+* Maintenance release
+ * Updated gem dependencies
+ * Moved to separate repository
+ * Updated documenation
+==0.7.2 / 2011-11-29
+* you can now use require in configuration files
+* better handling of paths in configuration files. Relative paths in chained configuration files are now correct
+* more unit tests
+==0.7.0 / 2011-08-11
+* Ruby 1.9 compatibility
+* updated systemu dependency
+* Unit tests extended
+* added context parameter to RubyCommand instances
+* ShellCommand now sets the error output consistently (at times it was nil)
+
+==0.6.4 / 2009-09-04
+* context parameter added to Command#run
+==0.6.3
+* Repository restructured (git is used internally so the svn repository matches now the master branch)
+* Cleanup. Some obsolete code was removed
+* Unit tests clarified
+==0.6.2
+* RubyCommand and ShellCommand are now more robust handling StandardError exceptions.
+==0.6.1
+* RubyCommand failure logs are now clearer no more 'RubyCommand failed:' redundancies.
+* RubyCommand: Backtrace added to error output if $DEBUG=true
+==0.6.0
+* RubyCommand now sets success when the block runs to the end. Block returns values are ignored. To indicate failure raise an exception. 
+
+== 0.5.8 /2008-09-18
+* CommandSequence status updates set the correct status
+== 0.5.7 / 2008-09-10
+* Sorted CommandSequenceStatus summaries
+== 0.5.6 / 2008-05-16
+* Better exception handling for RubyCommand. 
+* Error output of command now contains exception information in case of one.
+* jRuby combatibility fixes in Command.
+
+== 0.5.5 / 2008-03-13
+* RubyCommand does not expand working directories anymore and it now exposes working_directory and the assigned block (as cmd)
+== 0.5.4 / 2008-03-13
+* ShellCommand does not expand working directories anymore
+* Configurator#logger method redefinition removed
+== 0.5.3 / 2008-02-26
+* Bugfix: execution time is now correctly calculated (no nasty exception)
+== 0.5.2 / 2008-02-26
+* One should let the unit tests run before releasing!
+
+== 0.5.1 / 2008-02-26
+* A couple more unit tests
+* bugfix: command working directories are now fully expanded to avoid invalid nested chdir calls
+== 0.5.0 / 2007-07-13
+* setup_logger now accepts both Logger levels and :mute, :silent, :debug
+* 3 part version number. Version module with MAJOR, MINOR and TINY
+== 0.4.0 / 2007-05-30
+* Configurator#load_from_file method added to allow for configuration file inclusions
+
+== 0.3.0 / 2007-05-20
+* Bugfix for the nesting of CommandSequenceStatus
+* PatirLoggerFormatter added and used in setup_logger
+
+== 0.2.0 / 2007-03-22
+* Added the Command library
+ * Implementations: ShellCommand, RubyCommand
+
+== 0.1.0 / 2007-03-20
+* First version
+ * Base library with logger setup and drb setup methods
+ * Configuration library

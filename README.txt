@@ -1,29 +1,22 @@
-[patir](http://patir.rubyforge.org) provides code to enable project automation tasks:
+patir http://patir.rubyforge.org
+== DESCRIPTION:
+  
+patir provides code to enable project automation tasks:
 
- * A logging format for ruby's built-in Logger
- * A command abstraction with a platform independent implementation for running shell commands and ruby code
- * Command sequences using the same command abstraction as single commands.
- * Configuration format for configuration files written in ruby.
+* A logging format for ruby's built-in Logger
+* A command abstraction with a platform independent implementation for running shell commands and ruby code
+* Command sequences using the same command abstraction as single commands.
+* Configuration format for configuration files written in ruby.
 
-## Why?
-We've been using the same things again and again and can't be bothered to code it anew every time.
-
-The command abstraction has been used the most, the Logger defaults and formatting the least.
-
-## Dependencies
-The platform independence for shell commands is achieved with the help of the [systemu](https://github.com/ahoward/systemu) gem.
-
-Everything else is pure Ruby.
-
-## Install
+== INSTALL:
 
  gem install patir
 
-## License
+== LICENSE:
 
 (The Ruby License)
 
-patir is copyright (c) 2007-2012 Vassilis Rizopoulos
+patir is copyright (c) 2007-2011 Vassilis Rizopoulos
 
 You can redistribute it and/or modify it under either the terms of the GPL
 (see COPYING.txt file), or the conditions below:
