@@ -102,6 +102,7 @@ module Patir
   # :name - assign a name to the command (default is "").
   # :timeout - if the command runs longer than timeout, it will be interrupted and an error will be set.
   #
+  #The timeout is set in seconds
   class ShellCommand
     include Command
     #The constructor will throw CommandError if :cmd is missing.
