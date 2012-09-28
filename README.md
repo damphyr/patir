@@ -1,3 +1,5 @@
+[![Build Status](https://secure.travis-ci.org/damphyr/patir.png)](http://travis-ci.org/damphyr/patir)
+
 [patir](http://patir.rubyforge.org) provides code to enable project automation tasks:
 
  * A logging format for ruby's built-in Logger
