@@ -55,9 +55,7 @@ module Patir
     end
     #returns true if the command has been executed
     def run?
-      #use the accessor, because it initializes nil values
-      return false if self.status==:not_executed
-      return true
+      executed?
     end
     #executes the command and returns the status of the command.
     #
@@ -75,7 +73,7 @@ module Patir
       @error=""
       @status=:not_executed
     end
-    #returns false if the command has not been run
+    #returns false if the command has not been run, alias for run?
     def executed?
       return false if self.status==:not_executed
       return true
@@ -102,20 +100,21 @@ module Patir
   # :cmd - the shell command to execute (required - ParameterException will be raised).
   # :working_directory - specify the working directory (default is '.')
   # :name - assign a name to the command (default is "").
+  # :timeout - if the command runs longer than timeout, it will be interrupted and an error will be set.
+  #
   class ShellCommand
     include Command
     #The constructor will throw CommandError if :cmd is missing.
     #
     #CommandError will also be thrown if :working_directory does not exist.
-    def initialize *args
-      params=args[0] if args
-      raise ParameterException,"No ShellCommand parameters defined" unless params
+    def initialize params
       @name=params[:name]
       @working_directory=params[:working_directory] || "."
       #we need a command line :)
       raise ParameterException,"No :command defined" unless params[:cmd]
       @command=params[:cmd]
       @status=:not_executed
+      @timeout=params[:timeout]
     end
 
     #Executes the shell command and returns the status
@@ -125,16 +124,26 @@ module Patir
         #create the working directory if it does not exist
         FileUtils::mkdir_p(@working_directory,:verbose=>false)
         #create the actual command, run it, grab stderr and stdout and set output,error, status and execution time
-        status, @output, @error = systemu(@command,:cwd=>@working_directory)
+        if @timeout 
+          @error=""
+          exited=nil
+          exitstatus=0
+          status, @output, err = systemu(@command,:cwd=>@working_directory) do |cid|
+              sleep @timeout
+              @error<<"Command timed out after #{@timeout}s"
+              exited=true
+              exitstatus=23
+              Process.kill 9,cid
+          end
+          @error<<"\n#{err}" unless err.empty?
+        else
+          status, @output, @error = systemu(@command,:cwd=>@working_directory) 
+          exitstatus = status.exitstatus
+        end
+        exited||= status.exited?
         #lets get the status how we want it
-        begin
-          exited = status.exited?
-        rescue NotImplementedError
-          # so, JRuby as of version 1.1 does not understand exited?
-          exited = true
-        end 
         if exited
-          if status.exitstatus==0
+          if exitstatus ==0
             @status=:success
           else
             @status=:error

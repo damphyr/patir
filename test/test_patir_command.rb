@@ -89,11 +89,7 @@ class TestShellCommand<Test::Unit::TestCase
   end
   #an exception should be thrown when :cmd is nil
   def test_missing_cmd
-    assert_raise(ParameterException){cmd=ShellCommand.new(:working_directory=>"missing/")}
-  end
-  #an exception should be thrown when no parameters are passed
-  def test_missing_params
-    assert_raise(ParameterException){cmd=ShellCommand.new()}
+    assert_raise(ParameterException){ShellCommand.new(:working_directory=>"missing/")}
   end
   #test with another program
   def test_ls
@@ -107,6 +103,19 @@ class TestShellCommand<Test::Unit::TestCase
     else
       assert_not_equal("", cmd.error)
     end
+  end
+  def test_timeout
+    cmd=ShellCommand.new(:cmd=>"ruby -e 't=0;while t<10 do p t;t+=1;sleep 1 end '",:timeout=>1)
+    assert_nothing_raised() { cmd.run  }
+    assert(cmd.run?, "Should be marked as run")
+    assert(!cmd.success?,"Should not have been successful")
+    assert(!cmd.error.empty?, "There should be an error message")
+    #test also for an exit within the timeout
+    cmd=ShellCommand.new(:cmd=>"ruby -e 't=0;while t<1 do p t;t+=1;sleep 1 end '",:timeout=>4)
+    assert_nothing_raised() { cmd.run  }
+    assert(cmd.run?, "Should be marked as run")
+    assert(cmd.success?,"Should have been successful")
+    assert(cmd.error.empty?, "There should be no error messages")
   end
 end
 
