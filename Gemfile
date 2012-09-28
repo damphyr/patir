@@ -1,3 +1,7 @@
 source :rubygems
 gem 'systemu',"~>2.5.2"
-gem "hoe",'~>3.0.6'
+
+group :development do
+  gem "hoe","~>3.1.0"
+  gem 'rdoc',"~>3.12"
+end
