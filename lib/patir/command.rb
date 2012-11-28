@@ -141,7 +141,12 @@ module Patir
           status, @output, @error = systemu(@command,:cwd=>@working_directory) 
           exitstatus = status.exitstatus
         end
-        exited||= status.exited?
+        begin
+          exited||= status.exited?
+        rescue NotImplementedError
+          #oh look, it's jruby
+          exited=true
+        end
         #lets get the status how we want it
         if exited
           if exitstatus ==0
