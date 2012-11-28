@@ -1,7 +1,6 @@
-#  Copyright (c) 2007-2010 Vassilis Rizopoulos. All rights reserved.
+#  Copyright (c) 2007-2012 Vassilis Rizopoulos. All rights reserved.
 require 'observer'
 require 'fileutils'
-require 'rubygems'
 require 'systemu'
 require 'patir/base'
 

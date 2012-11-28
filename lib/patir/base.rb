@@ -1,4 +1,4 @@
-#  Copyright (c) 2007-2010 Vassilis Rizopoulos. All rights reserved.
+#  Copyright (c) 2007-2012 Vassilis Rizopoulos. All rights reserved.
 require 'logger'
 #This is the base module of the Patir system. It contains some usefull helper methods used by all child projects.
 module Patir
@@ -6,7 +6,7 @@ module Patir
   module Version
     MAJOR=0
     MINOR=8
-    TINY=0
+    TINY=1
     STRING=[ MAJOR, MINOR, TINY ].join( "." )  	
   end
   #Error thrown usually in initialize methods when missing required parameters
