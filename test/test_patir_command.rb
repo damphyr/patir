@@ -117,6 +117,19 @@ class TestShellCommand<Test::Unit::TestCase
     assert(cmd.success?,"Should have been successful")
     assert(cmd.error.empty?, "There should be no error messages")
   end
+  def test_missing_executable
+    cmd=ShellCommand.new(:cmd=>"bla")
+    assert(!cmd.run?)
+    assert(!cmd.success?)
+    assert_nothing_raised(){cmd.run}
+    assert(!cmd.success?, "Should fail if the executable is missing")
+
+    cmd=ShellCommand.new(:cmd=>'"With spaces" and params')
+    assert(!cmd.run?)
+    assert(!cmd.success?)
+    assert_nothing_raised(){cmd.run}
+    assert(!cmd.success?, "Should fail if the executable is missing")
+  end
 end
 
 class TestCommandSequence<Test::Unit::TestCase

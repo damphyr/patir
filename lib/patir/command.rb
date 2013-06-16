@@ -115,6 +115,8 @@ module Patir
       @command=params[:cmd]
       @status=:not_executed
       @timeout=params[:timeout]
+      @error=""
+      @output=""
     end
 
     #Executes the shell command and returns the status
@@ -125,7 +127,6 @@ module Patir
         FileUtils::mkdir_p(@working_directory,:verbose=>false)
         #create the actual command, run it, grab stderr and stdout and set output,error, status and execution time
         if @timeout 
-          @error=""
           exited=nil
           exitstatus=0
           status, @output, err = systemu(@command,:cwd=>@working_directory) do |cid|
@@ -158,7 +159,6 @@ module Patir
         end
       rescue
         #if it blows in systemu it will be nil
-        @error||=""
         @error<<"\n#{$!.message}"
         @error<<"\n#{$!.backtrace}" if $DEBUG
         @status=:error
