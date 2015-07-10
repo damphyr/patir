@@ -1,20 +1,21 @@
 GEM
-  remote: http://rubygems.org/
+  remote: https://rubygems.org/
   specs:
-    hoe (3.3.1)
+    hoe (3.13.1)
       rake (>= 0.8, < 11.0)
-    json (1.7.5)
-    json (1.7.5-java)
-    rake (10.0.2)
-    rdoc (3.12)
+    json (1.8.3)
+    json (1.8.3-java)
+    rake (10.4.2)
+    rdoc (4.1.2)
       json (~> 1.4)
-    systemu (2.5.2)
+    systemu (2.6.5)
 
 PLATFORMS
   java
   ruby
+  x86-mingw32
 
 DEPENDENCIES
-  hoe (~> 3.3.1)
-  rdoc (~> 3.12)
-  systemu (~> 2.5.2)
+  hoe (~> 3.13.1)
+  rdoc (~> 4.1.0)
+  systemu (~> 2.6)
