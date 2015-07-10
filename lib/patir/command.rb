@@ -492,6 +492,8 @@ module Patir
     def run context=nil
       @run=true
       @context=context
+      @error=""
+      @output=""
       begin
         t1=Time.now
         Dir.chdir(@working_directory) do
@@ -499,8 +501,8 @@ module Patir
           @status=:success
         end
       rescue StandardError
-        error<<"\n#{$!.message}"
-        error<<"\n#{$!.backtrace}" if $DEBUG
+        @error<<"\n#{$!.message}"
+        @error<<"\n#{$!.backtrace}" if $DEBUG
         @status=:error
       ensure
         @exec_time=Time.now-t1

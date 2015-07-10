@@ -43,7 +43,7 @@ end
 class TestShellCommand<Test::Unit::TestCase
   include Patir
   def teardown
-    Dir.delete("missing/") if File.exists?("missing/")
+    Dir.delete("missing/") if File.exist?("missing/")
   end
   #test the expected behaviour of a succesfull command
   def test_echo
@@ -55,7 +55,7 @@ class TestShellCommand<Test::Unit::TestCase
     assert_nothing_raised(){cmd.run}
     assert(cmd.run?)
     assert(cmd.success?)
-    assert_equal("hello\n",cmd.output)
+    assert_equal("hello",cmd.output.chomp)
     assert_equal("",cmd.error)
     assert_equal(:success,cmd.status)
   end
@@ -85,7 +85,7 @@ class TestShellCommand<Test::Unit::TestCase
     assert_not_nil(cmd)
     assert_equal(:success,cmd.run)
     assert(cmd.success?)
-    assert(File.exists?("missing/"))
+    assert(File.exist?("missing/"))
   end
   #an exception should be thrown when :cmd is nil
   def test_missing_cmd
@@ -242,6 +242,7 @@ class TestRubyCommand<Test::Unit::TestCase
     cmd=RubyCommand.new("test"){raise "Error"}
     assert_nothing_raised() { cmd.run}
     assert(!cmd.success?, "Successful?!")
+    assert_equal("\nError", cmd.error)
     assert_equal(:error, cmd.status)
   end
   def test_context

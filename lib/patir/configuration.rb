@@ -59,7 +59,7 @@ module Patir
     #You can 'include' the first.cfg file in the other configurations with
     # configuration.load_from_file("first.cfg")
     def load_from_file filename
-      fnm = File.exists?(filename) ? filename : File.join(@wd,filename)
+      fnm = File.exist?(filename) ? filename : File.join(@wd,filename)
       load_configuration(fnm)
     end
     private
