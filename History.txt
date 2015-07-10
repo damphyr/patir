@@ -1,3 +1,7 @@
+==0.8.2 / 2015-07-10
+* Fix an ancient RubyCommand bug that did not set error when an exception was raised in the block
+* Removed deprecation warnings
+
 ==0.8.1 / 2012-11-28
 * be a good citizen and do not require rubygems anywhere
 ==0.8.0 / 2012-11-28
