@@ -1,3 +1,7 @@
+==0.9.0 / 2016-02-08
+* Switched to minitest
+* Updated all gem dependencies
+
 ==0.8.2 / 2015-07-10
 * Fix an ancient RubyCommand bug that did not set error when an exception was raised in the block
 * Removed deprecation warnings
