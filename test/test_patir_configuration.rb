@@ -1,9 +1,9 @@
 $:.unshift File.join(File.dirname(__FILE__),"..","lib")
-require 'test/unit'
+require "minitest/autorun"
 
 require 'patir/configuration'
 module Patir
-  class TestConfigurator<Test::Unit::TestCase
+  class TestConfigurator<Minitest::Test
     def setup
       @prev_dir=Dir.pwd
       Dir.chdir(File.dirname(__FILE__))
@@ -19,10 +19,10 @@ module Patir
       assert_equal(c.configuration,c)
     end
     def test_raise_configuration
-      assert_raise(Patir::ConfigurationException) { Patir::Configurator.new("samples/failed.cfg")}
-      assert_raise(Patir::ConfigurationException) { Patir::Configurator.new("samples/failed_unknown.cfg")}
-      assert_raise(Patir::ConfigurationException) { Patir::Configurator.new("samples/syntax.cfg")}
-      assert_raise(Patir::ConfigurationException) { Patir::Configurator.new("samples/config_fail.cfg")}
+      assert_raises(Patir::ConfigurationException) { Patir::Configurator.new("samples/failed.cfg")}
+      assert_raises(Patir::ConfigurationException) { Patir::Configurator.new("samples/failed_unknown.cfg")}
+      assert_raises(Patir::ConfigurationException) { Patir::Configurator.new("samples/syntax.cfg")}
+      assert_raises(Patir::ConfigurationException) { Patir::Configurator.new("samples/config_fail.cfg")}
     end
   end
 end
