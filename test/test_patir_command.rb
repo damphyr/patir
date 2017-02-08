@@ -235,7 +235,7 @@ class TestRubyCommand<Minitest::Test
   def test_normal_ruby
     cmd=RubyCommand.new("test"){sleep 1}
     assert(cmd.run)
-    assert(cmd.success?, "Not successful.")
+    assert(cmd.success?, "RubyCommand run unsuccessfuly.")
     assert_equal(:success, cmd.status)
   end
   def test_error_ruby
