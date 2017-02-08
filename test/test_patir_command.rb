@@ -1,5 +1,5 @@
 $:.unshift File.join(File.dirname(__FILE__),"..","lib")
-require 'test/unit'
+require "minitest/autorun"
 require 'patir/command.rb'
 
 class MockCommandObject
@@ -22,25 +22,25 @@ class MockCommandError
   end
 end
 
-class TestCommand<Test::Unit::TestCase
+class TestCommand<Minitest::Test
   #tests the default values set by the module
   def test_module
     obj=MockCommandObject.new
     assert_equal("",obj.name)
     assert_equal(:not_executed,obj.status)
     assert(!obj.run?)
-    assert_nothing_raised{obj.run}
+    assert(obj.run)
     assert(obj.run?)
     assert_equal(:success,obj.status)
     assert_equal("",obj.output)
     assert_equal("",obj.error)
     assert_equal(0,obj.exec_time)
-    assert_nothing_raised{obj.reset}
+    assert(obj.reset)
     assert_equal(:not_executed,obj.status)
   end
 end
 
-class TestShellCommand<Test::Unit::TestCase
+class TestShellCommand<Minitest::Test
   include Patir
   def teardown
     Dir.delete("missing/") if File.exist?("missing/")
@@ -48,11 +48,11 @@ class TestShellCommand<Test::Unit::TestCase
   #test the expected behaviour of a succesfull command
   def test_echo
     cmd=nil
-    assert_nothing_raised(){cmd=ShellCommand.new(:cmd=>"echo hello")}
-    assert_not_nil(cmd)
+    assert(cmd=ShellCommand.new(:cmd=>"echo hello"))
+    assert_instance_of(ShellCommand,cmd)
     assert(!cmd.run?)
     assert(!cmd.success?)
-    assert_nothing_raised(){cmd.run}
+    assert(cmd.run)
     assert(cmd.run?)
     assert(cmd.success?)
     assert_equal("hello",cmd.output.chomp)
@@ -62,10 +62,10 @@ class TestShellCommand<Test::Unit::TestCase
   #test that error status is reported correctly, by testing a command that fails.
   def test_error
     cmd=nil
-    assert_nothing_raised(){cmd=ShellCommand.new(:cmd=>"cd /missing")}
+    assert(cmd=ShellCommand.new(:cmd=>"cd /missing"))
     assert(!cmd.run?)
     assert(!cmd.success?)
-    assert_nothing_raised(){cmd.run}
+    assert(cmd.run)
     assert(cmd.run?)
     assert(!cmd.success?)
     assert_equal(:error,cmd.status)
@@ -73,46 +73,46 @@ class TestShellCommand<Test::Unit::TestCase
   #when passed a wroking directory, the command should change into that directory
   def test_cwd
     cmd=nil
-    assert_nothing_raised(){cmd=ShellCommand.new(:cmd=>"echo", :working_directory=>"missing/")}
-    assert_nothing_raised(){cmd.run}
+    assert(cmd=ShellCommand.new(:cmd=>"echo", :working_directory=>"missing/"))
+    assert(cmd.run)
     assert(cmd.success?)
   end
   
   #when the working directory is missing, it should be created when the command is run
   def test_missing_cwd
     cmd=nil
-    assert_nothing_raised(){cmd=ShellCommand.new(:cmd=>"echo hello", :working_directory=>"missing/")}
-    assert_not_nil(cmd)
+    assert(cmd=ShellCommand.new(:cmd=>"echo hello", :working_directory=>"missing/"))
+    assert_instance_of(ShellCommand,cmd)
     assert_equal(:success,cmd.run)
     assert(cmd.success?)
     assert(File.exist?("missing/"))
   end
   #an exception should be thrown when :cmd is nil
   def test_missing_cmd
-    assert_raise(ParameterException){ShellCommand.new(:working_directory=>"missing/")}
+    assert_raises(ParameterException){ShellCommand.new(:working_directory=>"missing/")}
   end
   #test with another program
   def test_ls
     cmd=ShellCommand.new(:cmd=>"ls")
     assert(!cmd.run?)
     assert(!cmd.success?)
-    assert_nothing_raised(){cmd.run}
+    assert(cmd.run)
     assert(cmd.run?)
     if cmd.success?
-      assert_not_equal("", cmd.output)
+      refute_equal("", cmd.output)
     else
-      assert_not_equal("", cmd.error)
+      refute_equal("", cmd.error)
     end
   end
   def test_timeout
     cmd=ShellCommand.new(:cmd=>"ruby -e 't=0;while t<10 do p t;t+=1;sleep 1 end '",:timeout=>1)
-    assert_nothing_raised() { cmd.run  }
+    assert(cmd.run)
     assert(cmd.run?, "Should be marked as run")
     assert(!cmd.success?,"Should not have been successful")
     assert(!cmd.error.empty?, "There should be an error message")
     #test also for an exit within the timeout
     cmd=ShellCommand.new(:cmd=>"ruby -e 't=0;while t<1 do p t;t+=1;sleep 1 end '",:timeout=>4)
-    assert_nothing_raised() { cmd.run  }
+    assert(cmd.run)
     assert(cmd.run?, "Should be marked as run")
     assert(cmd.success?,"Should have been successful")
     assert(cmd.error.empty?, "There should be no error messages")
@@ -121,18 +121,18 @@ class TestShellCommand<Test::Unit::TestCase
     cmd=ShellCommand.new(:cmd=>"bla")
     assert(!cmd.run?)
     assert(!cmd.success?)
-    assert_nothing_raised(){cmd.run}
+    assert(cmd.run)
     assert(!cmd.success?, "Should fail if the executable is missing")
 
     cmd=ShellCommand.new(:cmd=>'"With spaces" and params')
     assert(!cmd.run?)
     assert(!cmd.success?)
-    assert_nothing_raised(){cmd.run}
+    assert(cmd.run)
     assert(!cmd.success?, "Should fail if the executable is missing")
   end
 end
 
-class TestCommandSequence<Test::Unit::TestCase
+class TestCommandSequence<Minitest::Test
   include Patir
   def setup
     @echo=ShellCommand.new(:cmd=>"echo hello")
@@ -144,12 +144,12 @@ class TestCommandSequence<Test::Unit::TestCase
   def test_normal
     seq=CommandSequence.new("test")
     assert(seq.steps.empty?)
-    assert_nothing_raised{seq.run}
+    refute_nil(seq.run)
     assert(!seq.state.success?)
     assert_equal(:warning,seq.state.status)
-    assert_nothing_raised{seq.add_step(@echo)}
-    assert_nothing_raised{seq.add_step(@void)}
-    assert_nothing_raised{seq.run}
+    assert(seq.add_step(@echo))
+    assert(seq.add_step(@void))
+    refute_nil(seq.run)
     assert(seq.state.success?)
   end
   
@@ -157,14 +157,14 @@ class TestCommandSequence<Test::Unit::TestCase
     seq=CommandSequence.new("test")
     assert(seq.steps.empty?)
     check_step=nil
-    assert_nothing_raised{check_step=seq.add_step(@echo,:flunk_on_error)}
+    assert(check_step=seq.add_step(@echo,:flunk_on_error))
     assert_equal(:flunk_on_error,check_step.strategy)
-    assert_nothing_raised{seq.add_step(@error,:flunk_on_error)}
-    assert_nothing_raised{seq.add_step(@void,:flunk_on_error)}
+    assert(seq.add_step(@error,:flunk_on_error))
+    assert(seq.add_step(@void,:flunk_on_error))
     assert(:not_executed==seq.state.step_state(0)[:status])
     assert(:not_executed==seq.state.step_state(1)[:status])
     assert(:not_executed==seq.state.step_state(2)[:status])
-    assert_nothing_raised{seq.run}
+    refute_nil(seq.run)
     assert(!seq.state.success?)
     #all three steps should have been run
     assert(:not_executed!=seq.state.step_state(0)[:status])
@@ -175,15 +175,15 @@ class TestCommandSequence<Test::Unit::TestCase
   def test_fail_on_error
     seq=CommandSequence.new("test")
     assert(seq.steps.empty?)
-    assert_nothing_raised{seq.add_step(@echo)}
+    assert(seq.add_step(@echo))
     check_step=nil
-    assert_nothing_raised{check_step=seq.add_step(@error,:fail_on_error)}
+    assert(check_step=seq.add_step(@error,:fail_on_error))
     assert_equal(:fail_on_error,check_step.strategy)
-    assert_nothing_raised{seq.add_step(@void)}
+    assert(seq.add_step(@void))
     assert(:not_executed==seq.state.step_state(0)[:status])
     assert(:not_executed==seq.state.step_state(1)[:status])
     assert(:not_executed==seq.state.step_state(2)[:status])
-    assert_nothing_raised{seq.run}
+    refute_nil(seq.run)
     assert(!seq.state.success?)
     #only two steps should have been run
     assert(:not_executed!=seq.state.step_state(0)[:status])
@@ -194,15 +194,15 @@ class TestCommandSequence<Test::Unit::TestCase
   def test_flunk_on_warning
     seq=CommandSequence.new("test")
     assert(seq.steps.empty?)
-    assert_nothing_raised{seq.add_step(@echo)}
+    assert(seq.add_step(@echo))
     check_step=nil
-    assert_nothing_raised{check_step=seq.add_step(@error,:flunk_on_warning)}
+    assert(check_step=seq.add_step(@error,:flunk_on_warning))
     assert_equal(:flunk_on_warning,check_step.strategy)
-    assert_nothing_raised{seq.add_step(@void)}
+    assert(seq.add_step(@void))
     assert(:not_executed==seq.state.step_state(0)[:status])
     assert(:not_executed==seq.state.step_state(1)[:status])
     assert(:not_executed==seq.state.step_state(2)[:status])
-    assert_nothing_raised{seq.run}
+    refute_nil(seq.run)
     assert(!seq.state.success?)
     #all three steps should have been run
     assert(:not_executed!=seq.state.step_state(0)[:status])
@@ -213,15 +213,15 @@ class TestCommandSequence<Test::Unit::TestCase
   def test_fail_on_warning
     seq=CommandSequence.new("test")
     assert(seq.steps.empty?)
-    assert_nothing_raised{seq.add_step(@echo)}
+    assert(seq.add_step(@echo))
     check_step=nil
-    assert_nothing_raised{check_step=seq.add_step(@warning,:fail_on_warning)}
+    assert(check_step=seq.add_step(@warning,:fail_on_warning))
     assert_equal(:fail_on_warning,check_step.strategy)
-    assert_nothing_raised{seq.add_step(@void)}
+    assert(seq.add_step(@void))
     assert(:not_executed==seq.state.step_state(0)[:status])
     assert(:not_executed==seq.state.step_state(1)[:status])
     assert(:not_executed==seq.state.step_state(2)[:status])
-    assert_nothing_raised{seq.run}
+    refute_nil(seq.run)
     assert(!seq.state.success?)
     #only two steps should have been run
     assert(:not_executed!=seq.state.step_state(0)[:status])
@@ -230,17 +230,17 @@ class TestCommandSequence<Test::Unit::TestCase
   end
 end
 
-class TestRubyCommand<Test::Unit::TestCase
+class TestRubyCommand<Minitest::Test
   include Patir
   def test_normal_ruby
     cmd=RubyCommand.new("test"){sleep 1}
-    assert_nothing_raised() { cmd.run}
+    assert(cmd.run)
     assert(cmd.success?, "Not successful.")
     assert_equal(:success, cmd.status)
   end
   def test_error_ruby
     cmd=RubyCommand.new("test"){raise "Error"}
-    assert_nothing_raised() { cmd.run}
+    assert(cmd.run)
     assert(!cmd.success?, "Successful?!")
     assert_equal("\nError", cmd.error)
     assert_equal(:error, cmd.status)
@@ -248,16 +248,16 @@ class TestRubyCommand<Test::Unit::TestCase
   def test_context
     context="complex"
     cmd=RubyCommand.new("test"){|c| c.output=c.context}
-    assert_nothing_raised() { cmd.run(context)}
+    assert(cmd.run(context))
     assert(cmd.success?, "Not successful.")
     assert_equal(context, cmd.output)
-    assert_nothing_raised() { cmd.run("other")}
+    assert(cmd.run("other"))
     assert_equal("other", cmd.output)
     assert_equal(:success, cmd.status)
   end
 end
 
-class TestCommandSequenceStatus<Test::Unit::TestCase
+class TestCommandSequenceStatus<Minitest::Test
   def test_new
     st=Patir::CommandSequenceStatus.new("sequence")
     assert(!st.running?)
@@ -290,7 +290,7 @@ class TestCommandSequenceStatus<Test::Unit::TestCase
     assert_equal(:error, st.status)
     st.step=step1
     assert_equal(:error, st.status)
-    assert_nothing_raised() {  puts st.summary }
+    refute_nil(st.summary)
   end
   
   def test_completed?
@@ -330,6 +330,6 @@ class TestCommandSequenceStatus<Test::Unit::TestCase
     step4.run
     st.step=step4
     assert(st.completed?, "should be complete.")
-    assert_nothing_raised() {  puts st.summary }
+    refute_nil(st.summary)
   end
 end

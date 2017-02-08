@@ -1,8 +1,8 @@
 $:.unshift File.join(File.dirname(__FILE__),"..","lib")
-require 'test/unit'
+require "minitest/autorun"
 require 'patir/base.rb'
 
-class TestBase<Test::Unit::TestCase
+class TestBase<Minitest::Test
   TEMP_LOG="temp.log"
   def teardown
     #clean up 
@@ -13,11 +13,11 @@ class TestBase<Test::Unit::TestCase
   #the logger
   def test_setup_logger
     logger=Patir.setup_logger
-    assert_not_nil(logger)
+    refute_nil(logger)
     logger=Patir.setup_logger(nil,:silent)
-    assert_not_nil(logger)
+    refute_nil(logger)
     logger=Patir.setup_logger("temp.log",:silent)
-    assert_not_nil(logger)
+    refute_nil(logger)
     assert(File.exist?(TEMP_LOG), "Log file not created")
     logger.close
   end

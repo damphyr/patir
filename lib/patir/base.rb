@@ -5,8 +5,8 @@ module Patir
   #The Patir version used
   module Version
     MAJOR=0
-    MINOR=8
-    TINY=2
+    MINOR=9
+    TINY=0
     STRING=[ MAJOR, MINOR, TINY ].join( "." )  	
   end
   #Error thrown usually in initialize methods when missing required parameters
