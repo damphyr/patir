@@ -41,6 +41,12 @@ module Patir
       @error||=""
       return @error
     end
+    #returns the error output for the command
+    def backtrace
+      #initialize nil values to something meaningful
+      @backtrace||=""
+      return @backtrace
+    end
     #returns the execution time (duration) for the command
     def exec_time
       #initialize nil values to something meaningful
@@ -498,6 +504,7 @@ module Patir
       @context=context
       @error=""
       @output=""
+      @backtrace=""
       begin
         t1=Time.now
         Dir.chdir(@working_directory) do
@@ -506,7 +513,7 @@ module Patir
         end
       rescue StandardError
         @error<<"\n#{$!.message}"
-        @error<<"\n#{$!.backtrace}" if $DEBUG
+        @backtrace=$@
         @status=:error
       ensure
         @exec_time=Time.now-t1
