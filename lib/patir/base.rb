@@ -4,6 +4,12 @@ require 'logger'
 #This is the base module of the Patir system. It contains some usefull helper methods used by all child projects.
 module Patir
   ##
+  # Exception which is thrown by children of Patir::Command if the Hash used for
+  # initialization misses required arguments
+  class ParameterException < RuntimeError
+  end
+
+  ##
   # Version information of Patir
   module Version
     ##
@@ -20,11 +26,6 @@ module Patir
     STRING = [MAJOR, MINOR, TINY].join('.').freeze
   end
 
-  #Error thrown usually in initialize methods when missing required parameters
-  #from the initialization hash.
-  class ParameterException<RuntimeError
-  end
-  
   class PatirLoggerFormatter<Logger::Formatter
     Format="[%s] %5s: %s\n"
     def initialize
