@@ -27,6 +27,26 @@ class TestBase<Minitest::Test
 end
 
 ##
+# Test Patir::PatirLoggerFormatter
+class TestPatirLoggerFormatter < Minitest::Test
+  ##
+  # Verify that Patir::PatirLoggerFormatter#call correctly formats messages
+  def test_call
+    formatter = Patir::PatirLoggerFormatter.new
+    time = Time.new(2020, 9, 17, 11, 18, 20)
+    assert_equal("[20200917 11:18:20]     1: Ouch\n",
+                 formatter.call(Logger::INFO, time, 'test_prog', 'Ouch'))
+  end
+
+  ##
+  # Verify that Patir::PatirLoggerFormatter is correctly initialized
+  def test_initialization
+    formatter = Patir::PatirLoggerFormatter.new
+    assert_equal('%Y%m%d %H:%M:%S', formatter.datetime_format)
+  end
+end
+
+##
 # Test Patir::Version
 class TestVersion < Minitest::Test
   ##
