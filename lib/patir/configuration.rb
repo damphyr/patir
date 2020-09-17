@@ -2,10 +2,12 @@
 
 require 'patir/base'
 module Patir
-  #This exception is thrown when encountering a configuration error
-  class ConfigurationException<RuntimeError
+  ##
+  # Exception which is being thrown if an error occurs while loading a
+  # configuration from a file
+  class ConfigurationException < RuntimeError
   end
-  
+
   #Configurator is the base class for all the Patir configuration classes.
   # 
   #The idea behind the configurator is that the developer creates a module that contains as methods
