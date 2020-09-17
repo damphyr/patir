@@ -1,15 +1,17 @@
 # Copyright (c) 2007-2020 Vassilis Rizopoulos. All rights reserved.
 
-$:.unshift File.join(File.dirname(__FILE__),"..","lib")
-require "minitest/autorun"
-require 'patir/base.rb'
+# frozen_string_literal: true
+
+require 'minitest/autorun'
+
+require_relative '../lib/patir/base.rb'
 
 ##
 # Test Patir
 class TestPatir < Minitest::Test
   ##
   # A temporary log file for testing
-  TEMP_LOG = 'temp.log'.freeze
+  TEMP_LOG = 'temp.log'
 
   ##
   # Clean-up steps after each of the Patir test cases
@@ -27,7 +29,6 @@ class TestPatir < Minitest::Test
       logger.debug('Test')
       logger.warn('Oh oh')
     end
-    puts "out: #{out}"
     assert_match(/\[\d{8} \d\d:\d\d:\d\d\]  WARN: Oh oh\n/, out)
   end
 

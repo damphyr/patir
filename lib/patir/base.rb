@@ -1,7 +1,13 @@
 # Copyright (c) 2007-2020 Vassilis Rizopoulos. All rights reserved.
 
+# frozen_string_literal: true
+
 require 'logger'
-#This is the base module of the Patir system. It contains some usefull helper methods used by all child projects.
+
+##
+# This module contains the entire functionality of Patir.
+#
+# Some useful helpers are included as methods too.
 module Patir
   ##
   # Exception which is thrown by children of Patir::Command if the Hash used for
@@ -14,7 +20,7 @@ module Patir
   class PatirLoggerFormatter < Logger::Formatter
     ##
     # The format of the created log messages
-    FORMAT = "[%s] %5s: %s\n".freeze
+    FORMAT = "[%s] %5s: %s\n"
 
     ##
     # Create a new instance defining the internally held log format
