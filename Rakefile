@@ -12,7 +12,7 @@ Hoe.spec('patir') do |prj|
   prj.description=prj.paragraphs_of('README.md',1..4).join("\n\n")
   prj.local_rdoc_dir='doc/rdoc'
   prj.readme_file="README.md"
-  prj.extra_deps<<["systemu", "~>2.6"]
+  prj.extra_deps<<["systemu", "~> 2.6.5"]
 end
 
 # vim: syntax=Ruby

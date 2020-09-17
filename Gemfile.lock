@@ -2,17 +2,17 @@ GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.1)
-    hoe (3.16.0)
-      rake (>= 0.8, < 13.0)
+    hoe (3.21.0)
+      rake (>= 0.8, < 15.0)
     jaro_winkler (1.5.4)
     jaro_winkler (1.5.4-java)
-    minitest (5.10.1)
+    minitest (5.14.2)
     parallel (1.19.2)
     parser (2.7.1.4)
       ast (~> 2.4.1)
     rainbow (3.0.0)
-    rake (12.0.0)
-    rdoc (5.0.0)
+    rake (13.0.1)
+    rdoc (6.1.2)
     rexml (3.2.4)
     rubocop (0.81.0)
       jaro_winkler (~> 1.5.1)
@@ -32,11 +32,11 @@ PLATFORMS
   x86-mingw32
 
 DEPENDENCIES
-  hoe (~> 3.16.0)
-  minitest (~> 5.10.1)
-  rdoc (~> 5.0.0)
+  hoe (~> 3.21.0)
+  minitest (~> 5.14.2)
+  rdoc (~> 6.1.2)
   rubocop (~> 0.81.0)
-  systemu (~> 2.6)
+  systemu (~> 2.6.5)
 
 BUNDLED WITH
    1.17.3
