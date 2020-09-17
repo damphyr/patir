@@ -3,13 +3,23 @@
 require 'logger'
 #This is the base module of the Patir system. It contains some usefull helper methods used by all child projects.
 module Patir
-  #The Patir version used
+  ##
+  # Version information of Patir
   module Version
-    MAJOR=0
-    MINOR=9
-    TINY=0
-    STRING=[ MAJOR, MINOR, TINY ].join( "." )  	
+    ##
+    # The major version of Patir
+    MAJOR = 0
+    ##
+    # The minor version of Patir
+    MINOR = 9
+    ##
+    # The tiny version of Patir
+    TINY = 0
+    ##
+    # The full version of Patir as a String
+    STRING = [MAJOR, MINOR, TINY].join('.').freeze
   end
+
   #Error thrown usually in initialize methods when missing required parameters
   #from the initialization hash.
   class ParameterException<RuntimeError
