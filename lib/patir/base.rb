@@ -1,4 +1,5 @@
-#  Copyright (c) 2007-2012 Vassilis Rizopoulos. All rights reserved.
+# Copyright (c) 2007-2020 Vassilis Rizopoulos. All rights reserved.
+
 require 'logger'
 #This is the base module of the Patir system. It contains some usefull helper methods used by all child projects.
 module Patir

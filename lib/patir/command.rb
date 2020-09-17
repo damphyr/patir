@@ -1,4 +1,5 @@
-#  Copyright (c) 2007-2012 Vassilis Rizopoulos. All rights reserved.
+# Copyright (c) 2007-2020 Vassilis Rizopoulos. All rights reserved.
+
 require 'observer'
 require 'fileutils'
 require 'systemu'
