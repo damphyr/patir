@@ -79,15 +79,19 @@ class TestPatirLoggerFormatter < Minitest::Test
   end
 end
 
-##
-# Test Patir::Version
-class TestVersion < Minitest::Test
-  ##
-  # Verify that the version data is correctly set
-  def test_version_data
-    assert_equal(0, Patir::Version::MAJOR)
-    assert_equal(9, Patir::Version::MINOR)
-    assert_equal(0, Patir::Version::TINY)
-    assert_equal('0.9.0', Patir::Version::STRING)
+module Patir
+  module Test
+    ##
+    # Test Patir::Version
+    class Version < Minitest::Test
+      ##
+      # Verify that the version data is correctly set
+      def test_version_data
+        assert_equal(0, Patir::Version::MAJOR)
+        assert_equal(9, Patir::Version::MINOR)
+        assert_equal(0, Patir::Version::TINY)
+        assert_equal('0.9.0', Patir::Version::STRING)
+      end
+    end
   end
 end
