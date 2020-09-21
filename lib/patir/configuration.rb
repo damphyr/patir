@@ -1,6 +1,11 @@
 # Copyright (c) 2007-2020 Vassilis Rizopoulos. All rights reserved.
 
-require 'patir/base'
+# frozen_string_literal: true
+
+require 'English'
+
+require_relative 'base'
+
 module Patir
   ##
   # Exception which is being thrown if an error occurs while loading a
@@ -21,8 +26,8 @@ module Patir
   # context (variable configuration), so the directives become methods in the
   # configuration file:
   #
-  #     cfg.directive = 'some value'
-  #     cfg.other_directive = { key: 'way to group values',other_key: 'abc' }
+  #     configuration.directive = 'some value'
+  #     configuration.other_directive = { key: 'way to group values',other_key: 'abc' }
   #
   # The Configurator instance then contains all the configuration data.
   #
@@ -74,10 +79,10 @@ module Patir
     ##
     # Initialize a new Configurator instance by parsing the given file and
     # and eventually logging with the specified logger
-    def initialize config_file,logger=nil
-      @logger=logger
-      @logger||=Patir.setup_logger
-      @config_file=config_file
+    def initialize(config_file, logger = nil)
+      @logger = logger
+      @logger ||= Patir.setup_logger
+      @config_file = config_file
       load_configuration(@config_file)
     end
 
@@ -87,7 +92,7 @@ module Patir
     # This should be overridden by the actual implementations. Its purpose is to
     # return the configuration in the desired format and conduct validation.
     def configuration
-      return self
+      self
     end
 
     ##
@@ -103,8 +108,8 @@ module Patir
     # can include the general one in the following way:
     #
     #     configuration.load_from_file('first.cfg')
-    def load_from_file filename
-      fnm = File.exist?(filename) ? filename : File.join(@wd,filename)
+    def load_from_file(filename)
+      fnm = File.exist?(filename) ? filename : File.join(@wd, filename)
       load_configuration(fnm)
     end
 
@@ -117,31 +122,33 @@ module Patir
     # directory the given file referred by +filename+ is located in. After
     # changing into this working directory the configuration file is being
     # evaluated.
-    def load_configuration filename
-      begin 
-        cfg_txt=File.read(filename)
-        @wd=File.expand_path(File.dirname(filename))
-        configuration=self
-        #add the path to the require lookup path to allow require statements in the configuration files
-        $:.unshift File.join(@wd)
-        #evaluate in the working directory to enable relative paths in configuration
-        Dir.chdir(@wd){eval(cfg_txt,binding())}
-        @logger.info("Configuration loaded from #{filename}") if @logger
-      rescue ConfigurationException
-        #pass it on, do not wrap again
-        raise
-      rescue SyntaxError
-        #Just wrap the exception so we can differentiate
-        @logger.debug($!)
-        raise ConfigurationException.new,"Syntax error in the configuration file '#{filename}':\n#{$!.message}"
-      rescue NoMethodError
-        @logger.debug($!)
-        raise ConfigurationException.new,"Encountered an unknown directive in configuration file '#{filename}':\n#{$!.message}"
-      rescue 
-        @logger.debug($!)
-        #Just wrap the exception so we can differentiate
-        raise ConfigurationException.new,"#{$!.message}"
-      end
+    def load_configuration(filename)
+      cfg_txt = File.read(filename)
+      @wd = File.expand_path(File.dirname(filename))
+      configuration = self
+      # Add the deducted working directory to the required lookup path to allow
+      # require statements in the configuration files
+      $LOAD_PATH.unshift File.join(@wd)
+      # Evaluate in the deducted working directory to enable relative paths in
+      # the configuration files
+      Dir.chdir(@wd) { eval(cfg_txt, binding) }
+      @logger&.info("Configuration loaded from #{filename}")
+    rescue ConfigurationException
+      # Pass the exception on and do not wrap it again
+      raise
+    rescue SyntaxError
+      # Just wrap the exception for differentiation
+      @logger&.debug($ERROR_INFO)
+      raise ConfigurationException.new, \
+            "Syntax error in the configuration file '#{filename}':\n#{$ERROR_INFO.message}"
+    rescue NoMethodError
+      @logger&.debug($ERROR_INFO)
+      raise ConfigurationException.new, \
+            "Encountered an unknown directive in configuration file '#{filename}':\n#{$ERROR_INFO.message}"
+    rescue
+      @logger&.debug($ERROR_INFO)
+      # Just wrap the exception for differentiation
+      raise ConfigurationException.new, $ERROR_INFO.message.to_s
     end
   end
 end
