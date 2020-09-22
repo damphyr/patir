@@ -6,95 +6,152 @@ require 'systemu'
 require 'patir/base'
 
 module Patir
-  #This module defines the interface for a Command object.
+  ##
+  # A module defining the interface for a Command object
   #
-  #It more or less serves the purpose of documenting the interface/contract expected 
-  #by a class that executes commands and returns their output and exit status.
+  # This modul more or less serves the purpose of documenting the interface or
+  # contract expected by a class that executes commands and returns their output
+  # and exit status.
   #
-  #There is also that bit of functionality that facilitates grouping multiple commands into command sequences
+  # It contains also a bit of functionality that facilitates grouping multiple
+  # commands into command sequences
   #
-  #The various methods initialize member variables with meaningful values where needed.
+  # The various methods initialize member variables with meaningful values where
+  # needed.
   #
-  #Using the contract means implementing the Command#run method. This method should then set 
-  #the output, exec_time and status values according to the implementation.
+  # Using the contract means implementing the Command#run method. This method
+  # should then set the +error+, +exec_time+, +output+ and +status+ values
+  # according to the implementated command's execution result.
   #
-  #Take a look at ShellCommand and RubyCommand for a couple of practical examples.
+  # RubyCommand and ShellCommand can be taken as practical examples.
   #
-  #It is a good idea to rescue all exceptions. You can then set error to return the exception message.
+  # It is a good idea to rescue all exceptions. +error+ can then be set to
+  # return the exception message.
   module Command
-    attr_writer :output, :name, :exec_time,:error,:status
-    attr_accessor :number,:strategy
-    #returns the commands alias/name
+    ##
+    # A backtrace of the command
+    attr_writer :backtrace
+    ##
+    # Error output of the command
+    attr_writer :error
+    ##
+    # The execution time (duration) of the command
+    attr_writer :exec_time
+    ##
+    # The alias or name of the command
+    attr_writer :name
+    ##
+    # Regular output of the command
+    attr_writer :output
+    ##
+    # The status of the command
+    attr_writer :status
+    ##
+    # The number of the command (could be used for groups of commands)
+    attr_accessor :number
+    ##
+    # Strategy concerning the command (seems to be used to define exit
+    # strategies)
+    attr_accessor :strategy
+
+    ##
+    # Return the command's alias or name
     def name
-      #initialize nil values to something meaningful
-      @name||=""
-      return @name
+      # Initialize a nil value to something meaningful
+      @name ||= ''
+      @name
     end
-    #returns the output of the command
+
+    ##
+    # Return the output of the command
     def output
-      #initialize nil values to something meaningful
-      @output||=""
-      return @output
+      # Initialize a nil value to something meaningful
+      @output ||= ''
+      @output
     end
-    #returns the error output for the command
+
+    ##
+    # Return the error output of the command
     def error
-      #initialize nil values to something meaningful
-      @error||=""
-      return @error
+      # Initialize a nil value to something meaningful
+      @error ||= ''
+      @error
     end
-    #returns the error output for the command
+
+    ##
+    # Return a backtrace of the command if applicable
     def backtrace
-      #initialize nil values to something meaningful
-      @backtrace||=""
-      return @backtrace
+      # Initialize a nil value to something meaningful
+      @backtrace ||= ''
+      @backtrace
     end
-    #returns the execution time (duration) for the command
+
+    ##
+    # Return the execution time (duration) of the command
     def exec_time
-      #initialize nil values to something meaningful
-      @exec_time||=0
-      return @exec_time
+      # Initialize a nil value to something meaningful
+      @exec_time ||= 0
+      @exec_time
     end
-    #returns true if the command has finished succesfully
+
+    ##
+    # Return +true+ if the command has finished succesfully
     def success?
-      return true if self.status==:success
-      return false
+      return true if status == :success
+
+      false
     end
-    #returns true if the command has been executed
+
+    ##
+    # Return +true+ if the command has been executed
     def run?
       executed?
     end
-    #executes the command and returns the status of the command.
+
+    ##
+    # Execute the command and returns its status
     #
-    #overwrite this method in classes that include Command
-    def run context=nil
-      @status=:success
-      return self.status
+    # Classes including Command should override this method
+    def run(_context = nil)
+      @status = :success
+      status
     end
-    #clears the status and output of the command.
+
+    ##
+    # Clear the backtrace, execution time, the outputs and the status of the
+    # command
     #
-    #Call this if you want to pretend that it was never executed
+    # This should be called if the execution of a task and its results shall be
+    # forgotten.
     def reset
-      @exec_time=0
-      @output=""
-      @error=""
-      @status=:not_executed
+      @backtrace = ''
+      @error = ''
+      @exec_time = 0
+      @output = ''
+      @status = :not_executed
     end
-    #returns false if the command has not been run, alias for run?
+
+    ##
+    # Return +false+ if the command has not been run, alias for #run?
     def executed?
-      return false if self.status==:not_executed
-      return true
+      return false if status == :not_executed
+
+      true
     end
-    #returns the command status.
+
+    ##
+    # Return the status of the Command instance
     #
-    #valid stati are
-    # :not_executed when the command was not run
-    # :success when the command has finished succesfully
-    # :error when the command has an error
-    # :warning when the command finished without errors, but there where warnings
+    # Valid stati are
+    # * +:not_executed+ when the command was not run
+    # * +:success+ when the command has finished succesfully
+    # * +:error+ when the command has an error
+    # * +:warning+ when the command finished without errors but there where
+    #   warnings
     def status
-      #initialize nil values to something meaningful
-      @status||=:not_executed
-      return @status
+      # Initialize a nil value to something meaningful
+      @status ||= :not_executed
+      @status
     end
   end
 

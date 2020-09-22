@@ -49,15 +49,18 @@ module Patir::Test
     # Verify that the Patir::Command#reset method correctly resets its fields
     def test_reset
       obj = MockCommandObject.new
+      obj.backtrace = "Something\nbad\nhappened"
       obj.error = 'Ouch'
       obj.exec_time = 182
       obj.output = 'Some characters'
       obj.status = :some_state
+      assert_equal("Something\nbad\nhappened", obj.backtrace)
       assert_equal('Ouch', obj.error)
       assert_equal(182, obj.exec_time)
       assert_equal('Some characters', obj.output)
       assert_equal(:some_state, obj.status)
       obj.reset
+      assert_equal('', obj.backtrace)
       assert_equal('', obj.error)
       assert_equal(0, obj.exec_time)
       assert_equal('', obj.output)
