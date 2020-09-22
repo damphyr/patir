@@ -1,5 +1,6 @@
 # Copyright (c) 2007-2020 Vassilis Rizopoulos. All rights reserved.
 
+require 'English'
 require 'observer'
 require 'fileutils'
 require 'systemu'
@@ -354,7 +355,7 @@ module Patir
       exit_strategy = :fail_on_error unless [:flunk_on_error,:fail_on_warning,:flunk_on_warning].include?(exit_strategy)
       bstep.strategy=exit_strategy
       #add it to the lot
-      @steps<<bstep
+      @steps << bstep
       #add it to status as well
       @state.step=bstep
       notify(:sequence_status=>@state)
@@ -492,7 +493,7 @@ module Patir
           #sort them by number
           sorter[number]="\n\t#{number}:'#{state[:name]}' - #{state[:status]}"
         end
-        1.upto(sorter.size) {|i| sum<<sorter[i] if sorter[i]}
+        1.upto(sorter.size) {|i| sum << sorter[i] if sorter[i]}
       end 
       return sum
     end
@@ -521,62 +522,79 @@ module Patir
     end
   end
 
-  #This class allows you to wrap Ruby blocks and handle them like Command
+  ##
+  # Class allowing to wrap Ruby blocks and treat them like a command
   #
-  #Provide a block to RubyCommand#new and you can execute the block using
-  #RubyCommand#run
+  # A block provided to RubyCommand#new can be executed using RubyCommand#run
   #
-  #The block receives the instance of RubyCommand so you can set the output and error output.
+  # The block receives the instance of RubyCommand so the output and error
+  # output can be set within the block.
   #
-  #If the block runs to the end the command is considered successful.
+  # If the block runs to the end the command is considered successful.
   #
-  #Raising an exception in the block will set the command status to :error. 
+  # If an exception is raised in the block this will set the command status to
+  # +:error+. The exception message will be appended to the +error+ member of
+  # the command instance.
   #
-  #The exception message will be appended to the error output of the command
+  # == Examples
   #
-  #== Examples
-  #An example (using the excellent HighLine lib) of a CLI prompt as a RubyCommand
-  # RubyCommand.new("prompt") do |cmd|  
-  #   cmd.output=""
-  #   cmd.error=""
-  #   unless HighLine.agree("#{step.text}?")
-  #     cmd.error="Why not?"
-  #     raise "You did not agree" 
-  #   end
-  # end
+  # An example (using the excellent HighLine lib) of a CLI prompt as a
+  # RubyCommand:
+  #
+  #     RubyCommand.new('prompt') do |cmd|
+  #       cmd.error = ''
+  #       cmd.output = ''
+  #       unless HighLine.agree("#{step.text}?")
+  #         cmd.error = 'Why not?'
+  #         raise 'You did not agree'
+  #       end
+  #     end
   class RubyCommand
     include Patir::Command
-    attr_reader :cmd,:working_directory,:context
-    def initialize name,working_directory=nil,&block
-      @name=name
-      @working_directory=working_directory||"."
-      if block_given?
-        @cmd=block 
-      else
-        raise "You need to provide a block"
-      end
+
+    ##
+    # This holds the block being passed to the initialization method
+    attr_reader :cmd
+    ##
+    # The context of an execution (is reset to +nil+ when execution is finished)
+    attr_reader :context
+    ##
+    # The working directory within the block is being executed
+    attr_reader :working_directory
+
+    ##
+    # Create a RubyCommand instance with a particular +name+, an optional
+    # +working_directory+ and a +block+ that will be executed by it
+    def initialize(name, working_directory = nil, &block)
+      @name = name
+      @working_directory = working_directory || '.'
+      raise 'You need to provide a block' unless block_given?
+
+      @cmd = block
     end
-    #Runs the associated block
-    def run context=nil
-      @context=context
-      @error=""
-      @output=""
-      @backtrace=""
+
+    ##
+    # Run the block passed on initialization
+    def run(context = nil)
+      @backtrace = ''
+      @context = context
+      @error = ''
+      @output = ''
       begin
-        t1=Time.now
+        t1 = Time.now
         Dir.chdir(@working_directory) do
           @cmd.call(self)
-          @status=:success
+          @status = :success
         end
       rescue StandardError
-        @error<<"\n#{$!.message}"
-        @backtrace=$@
-        @status=:error
+        @error << "\n#{$ERROR_INFO.message}"
+        @backtrace = $ERROR_POSITION
+        @status = :error
       ensure
-        @exec_time=Time.now-t1
+        @exec_time = Time.now - t1
       end
-      @context=nil
-      return @status
+      @context = nil
+      @status
     end
   end
 end
