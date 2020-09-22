@@ -55,6 +55,38 @@ module Patir
     attr_accessor :strategy
 
     ##
+    # Return a backtrace of the command if applicable
+    def backtrace
+      # Initialize a nil value to something meaningful
+      @backtrace ||= ''
+      @backtrace
+    end
+
+    ##
+    # Return the error output of the command
+    def error
+      # Initialize a nil value to something meaningful
+      @error ||= ''
+      @error
+    end
+
+    ##
+    # Return the execution time (duration) of the command
+    def exec_time
+      # Initialize a nil value to something meaningful
+      @exec_time ||= 0
+      @exec_time
+    end
+
+    ##
+    # Return +false+ if the command has not been run, alias for #run?
+    def executed?
+      return false if status == :not_executed
+
+      true
+    end
+
+    ##
     # Return the command's alias or name
     def name
       # Initialize a nil value to something meaningful
@@ -68,53 +100,6 @@ module Patir
       # Initialize a nil value to something meaningful
       @output ||= ''
       @output
-    end
-
-    ##
-    # Return the error output of the command
-    def error
-      # Initialize a nil value to something meaningful
-      @error ||= ''
-      @error
-    end
-
-    ##
-    # Return a backtrace of the command if applicable
-    def backtrace
-      # Initialize a nil value to something meaningful
-      @backtrace ||= ''
-      @backtrace
-    end
-
-    ##
-    # Return the execution time (duration) of the command
-    def exec_time
-      # Initialize a nil value to something meaningful
-      @exec_time ||= 0
-      @exec_time
-    end
-
-    ##
-    # Return +true+ if the command has finished succesfully
-    def success?
-      return true if status == :success
-
-      false
-    end
-
-    ##
-    # Return +true+ if the command has been executed
-    def run?
-      executed?
-    end
-
-    ##
-    # Execute the command and returns its status
-    #
-    # Classes including Command should override this method
-    def run(_context = nil)
-      @status = :success
-      status
     end
 
     ##
@@ -132,11 +117,18 @@ module Patir
     end
 
     ##
-    # Return +false+ if the command has not been run, alias for #run?
-    def executed?
-      return false if status == :not_executed
+    # Execute the command and returns its status
+    #
+    # Classes including Command should override this method
+    def run(_context = nil)
+      @status = :success
+      status
+    end
 
-      true
+    ##
+    # Return +true+ if the command has been executed
+    def run?
+      executed?
     end
 
     ##
@@ -152,6 +144,14 @@ module Patir
       # Initialize a nil value to something meaningful
       @status ||= :not_executed
       @status
+    end
+
+    ##
+    # Return +true+ if the command has finished succesfully
+    def success?
+      return true if status == :success
+
+      false
     end
   end
 
