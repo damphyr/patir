@@ -276,30 +276,84 @@ module Patir::Test
   class RubyCommand < Minitest::Test
     include Patir
 
-    def test_normal_ruby
-      cmd = Patir::RubyCommand.new('test') { sleep 1 }
-      assert(cmd.run)
-      assert(cmd.success?, 'RubyCommand run unsuccessfuly.')
-      assert_equal(:success, cmd.status)
+    ##
+    # Verify that Patir::RubyCommand is correctly initialized with a working
+    # directory being given
+    def test_initialization_with_working_directory
+      sleep_cmd = lambda { sleep 1 }
+      cmd = Patir::RubyCommand.new('test_cmd', 'example/path', &sleep_cmd)
+      assert_equal(sleep_cmd, cmd.cmd)
+      assert_equal('test_cmd', cmd.name)
+      assert_equal('example/path', cmd.working_directory)
     end
 
-    def test_error_ruby
-      cmd = Patir::RubyCommand.new('test') { raise 'Error' }
-      assert(cmd.run)
-      assert(!cmd.success?, 'Successful?!')
-      assert_equal("\nError", cmd.error)
+    ##
+    # Verify that Patir::RubyCommand raises if no block is being given
+    def test_initialization_without_block
+      exc = assert_raises(RuntimeError) do
+        Patir::RubyCommand.new('test_cmd')
+      end
+      assert_equal('You need to provide a block', exc.message)
+    end
+
+    ##
+    # Verify that Patir::RubyCommand is correctly initialized without a working
+    # directory being given
+    def test_initialization_without_working_directory
+      sleep_cmd = lambda { sleep 1 }
+      cmd = Patir::RubyCommand.new('test_cmd', &sleep_cmd)
+      assert_equal(sleep_cmd, cmd.cmd)
+      assert_equal('test_cmd', cmd.name)
+      assert_equal('.', cmd.working_directory)
+    end
+
+    ##
+    # Verify the outcome of a successful block execution
+    def test_successful_execution
+      cmd = Patir::RubyCommand.new('test') { sleep 1 }
+      assert_equal(:success, cmd.run)
+      assert_equal('', cmd.backtrace)
+      assert_nil(cmd.context)
+      assert_equal('', cmd.error)
+      assert_in_delta(1, cmd.exec_time, 0.05)
+      assert_equal('', cmd.output)
+      assert_equal(:success, cmd.status)
+      assert(cmd.success?)
+    end
+
+    ##
+    # Verify that exceptions are correctly handled during the execution of a
+    # command
+    def test_exeption_handling
+      cmd = Patir::RubyCommand.new('test') do
+        sleep 1
+        raise 'An error happened'
+        sleep 1
+      end
+      assert(cmd.run('context does not matter'))
+      assert_nil(cmd.context)
+      assert_in_delta(1, cmd.exec_time, 0.05)
+      refute(cmd.success?)
+      assert_match(/^\[".*`block in autorun'"\]$/, cmd.backtrace.to_s)
+      assert_equal("\nAn error happened", cmd.error)
       assert_equal(:error, cmd.status)
     end
 
-    def test_context
+    ##
+    # Verify that an execution context is correctly handled
+    def test_execution_context_handling
       context = 'complex'
       cmd = Patir::RubyCommand.new('test') { |c| c.output = c.context }
-      assert(cmd.run(context))
-      assert(cmd.success?, 'Not successful.')
-      assert_equal(context, cmd.output)
-      assert(cmd.run('other'))
-      assert_equal('other', cmd.output)
+      assert_equal(:success, cmd.run(context))
+      assert_equal('', cmd.backtrace)
+      assert_nil(cmd.context)
+      assert_equal('', cmd.error)
+      assert_in_delta(0, cmd.exec_time, 0.05)
+      assert_equal('complex', cmd.output)
       assert_equal(:success, cmd.status)
+      assert(cmd.success?)
+      assert_equal(:success, cmd.run('simple'))
+      assert_equal('simple', cmd.output)
     end
   end
 end
