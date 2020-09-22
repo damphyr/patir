@@ -32,6 +32,7 @@ module Patir::Test
     # Verify that the module's default values are correctly set
     def test_default_values
       obj = MockCommandObject.new
+      assert_equal('', obj.backtrace)
       assert_equal('', obj.error)
       assert_equal(0, obj.exec_time)
       refute(obj.executed?)
