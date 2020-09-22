@@ -24,21 +24,55 @@ class MockCommandError
   end
 end
 
-class TestCommand<Minitest::Test
-  #tests the default values set by the module
-  def test_module
-    obj=MockCommandObject.new
-    assert_equal("",obj.name)
-    assert_equal(:not_executed,obj.status)
-    assert(!obj.run?)
-    assert(obj.run)
-    assert(obj.run?)
-    assert_equal(:success,obj.status)
-    assert_equal("",obj.output)
-    assert_equal("",obj.error)
-    assert_equal(0,obj.exec_time)
-    assert(obj.reset)
-    assert_equal(:not_executed,obj.status)
+module Patir::Test
+  ##
+  # Test the Patir::Command module
+  class Command < Minitest::Test
+    ##
+    # Verify that the module's default values are correctly set
+    def test_default_values
+      obj = MockCommandObject.new
+      assert_equal('', obj.error)
+      assert_equal(0, obj.exec_time)
+      refute(obj.executed?)
+      assert_equal('', obj.name)
+      assert_nil(obj.number)
+      assert_equal('', obj.output)
+      refute(obj.run?)
+      assert_equal(:not_executed, obj.status)
+      assert_nil(obj.strategy)
+      refute(obj.success?)
+    end
+
+    ##
+    # Verify that the Patir::Command#reset method correctly resets its fields
+    def test_reset
+      obj = MockCommandObject.new
+      obj.error = 'Ouch'
+      obj.exec_time = 182
+      obj.output = 'Some characters'
+      obj.status = :some_state
+      assert_equal('Ouch', obj.error)
+      assert_equal(182, obj.exec_time)
+      assert_equal('Some characters', obj.output)
+      assert_equal(:some_state, obj.status)
+      obj.reset
+      assert_equal('', obj.error)
+      assert_equal(0, obj.exec_time)
+      assert_equal('', obj.output)
+      assert_equal(:not_executed, obj.status)
+    end
+
+    ##
+    # Verify that the Patir::Command#run method correctly updates the status
+    def test_run
+      obj = MockCommandObject.new
+      assert_equal(:not_executed, obj.status)
+      obj.run
+      assert(obj.executed?)
+      assert(obj.run?)
+      assert_equal(:success, obj.status)
+    end
   end
 end
 
