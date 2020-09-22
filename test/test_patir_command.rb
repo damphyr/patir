@@ -270,30 +270,37 @@ class TestCommandSequence<Minitest::Test
   end
 end
 
-class TestRubyCommand<Minitest::Test
-  include Patir
-  def test_normal_ruby
-    cmd=RubyCommand.new("test"){sleep 1}
-    assert(cmd.run)
-    assert(cmd.success?, "RubyCommand run unsuccessfuly.")
-    assert_equal(:success, cmd.status)
-  end
-  def test_error_ruby
-    cmd=RubyCommand.new("test"){raise "Error"}
-    assert(cmd.run)
-    assert(!cmd.success?, "Successful?!")
-    assert_equal("\nError", cmd.error)
-    assert_equal(:error, cmd.status)
-  end
-  def test_context
-    context="complex"
-    cmd=RubyCommand.new("test"){|c| c.output=c.context}
-    assert(cmd.run(context))
-    assert(cmd.success?, "Not successful.")
-    assert_equal(context, cmd.output)
-    assert(cmd.run("other"))
-    assert_equal("other", cmd.output)
-    assert_equal(:success, cmd.status)
+module Patir::Test
+  ##
+  # Test the Patir::RubyCommand class
+  class RubyCommand < Minitest::Test
+    include Patir
+
+    def test_normal_ruby
+      cmd = Patir::RubyCommand.new('test') { sleep 1 }
+      assert(cmd.run)
+      assert(cmd.success?, 'RubyCommand run unsuccessfuly.')
+      assert_equal(:success, cmd.status)
+    end
+
+    def test_error_ruby
+      cmd = Patir::RubyCommand.new('test') { raise 'Error' }
+      assert(cmd.run)
+      assert(!cmd.success?, 'Successful?!')
+      assert_equal("\nError", cmd.error)
+      assert_equal(:error, cmd.status)
+    end
+
+    def test_context
+      context = 'complex'
+      cmd = Patir::RubyCommand.new('test') { |c| c.output = c.context }
+      assert(cmd.run(context))
+      assert(cmd.success?, 'Not successful.')
+      assert_equal(context, cmd.output)
+      assert(cmd.run('other'))
+      assert_equal('other', cmd.output)
+      assert_equal(:success, cmd.status)
+    end
   end
 end
 
