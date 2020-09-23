@@ -43,7 +43,7 @@ module Patir
     MAJOR = 0
     ##
     # The minor version of Patir
-    MINOR = 9
+    MINOR = 10
     ##
     # The tiny version of Patir
     TINY = 0
