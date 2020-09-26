@@ -1,5 +1,7 @@
 # Copyright (c) 2007-2020 Vassilis Rizopoulos. All rights reserved.
 
+# frozen_string_literal: true
+
 require_relative '../lib/patir/commandsequence'
 
 module Patir::Test
@@ -98,79 +100,79 @@ module Patir::Test
     end
   end
 
-  class CommandSequenceStatus<Minitest::Test
+  class CommandSequenceStatus < Minitest::Test
     def test_new
-      st=Patir::CommandSequenceStatus.new("sequence")
-      assert(!st.running?)
-      assert(!st.success?)
+      st = Patir::CommandSequenceStatus.new('sequence')
+      refute(st.running?)
+      refute(st.success?)
       assert_equal(:not_executed, st.status)
       assert_nil(st.step_state(3))
     end
 
     def test_step_equal
-      st=Patir::CommandSequenceStatus.new("sequence")
-      step1=MockCommandObject.new
-      step2=MockCommandWarning.new
-      step3=MockCommandError.new
+      st = Patir::CommandSequenceStatus.new('sequence')
+      step1 = MockCommandObject.new
+      step2 = MockCommandWarning.new
+      step3 = MockCommandError.new
       step1.run
-      step1.number=1
+      step1.number = 1
       step2.run
-      step2.number=2
+      step2.number = 2
       step3.run
-      step3.number=3
-      st.step=step1
+      step3.number = 3
+      st.step = step1
       assert_equal(:success, st.status)
       assert_equal(step1.status, st.step_state(1)[:status])
-      st.step=step2
+      st.step = step2
       assert_equal(:warning, st.status)
-      st.step=step3
+      st.step = step3
       assert_equal(:error, st.status)
-      step2.number=1
-      st.step=step2
+      step2.number = 1
+      st.step = step2
       assert_equal(step2.status, st.step_state(1)[:status])
       assert_equal(:error, st.status)
-      st.step=step1
+      st.step = step1
       assert_equal(:error, st.status)
       refute_nil(st.summary)
     end
 
     def test_completed?
-      st=Patir::CommandSequenceStatus.new("sequence")
-      step1=MockCommandObject.new
-      step1.number=1
-      step2=MockCommandWarning.new
-      step2.number=2
-      step3=MockCommandError.new
-      step3.number=3
-      step4=MockCommandObject.new
-      step4.number=4
-      st.step=step1
-      st.step=step2
-      st.step=step3
-      st.step=step4
-      assert(!st.completed?, "should not be complete.")
+      st = Patir::CommandSequenceStatus.new('sequence')
+      step1 = MockCommandObject.new
+      step1.number = 1
+      step2 = MockCommandWarning.new
+      step2.number = 2
+      step3 = MockCommandError.new
+      step3.number = 3
+      step4 = MockCommandObject.new
+      step4.number = 4
+      st.step = step1
+      st.step = step2
+      st.step = step3
+      st.step = step4
+      refute(st.completed?, 'should not be complete.')
       step1.run
-      st.step=step1
-      assert(!st.completed?, "should not be complete.")
+      st.step = step1
+      refute(st.completed?, 'should not be complete.')
       step2.run
-      st.step=step2
-      assert(!st.completed?, "should not be complete.")
-      step2.strategy=:fail_on_warning
-      st.step=step2
-      assert(st.completed?, "should be complete.")
-      step2.strategy=nil
-      st.step=step2
-      assert(!st.completed?, "should not be complete.")
+      st.step = step2
+      refute(st.completed?, 'should not be complete.')
+      step2.strategy = :fail_on_warning
+      st.step = step2
+      assert(st.completed?, 'should be complete.')
+      step2.strategy = nil
+      st.step = step2
+      refute(st.completed?, 'should not be complete.')
       step3.run
-      step3.strategy=:fail_on_error
-      st.step=step3
-      assert(st.completed?, "should be complete.")
-      step3.strategy=nil
-      st.step=step3
-      assert(!st.completed?, "should not be complete.")
+      step3.strategy = :fail_on_error
+      st.step = step3
+      assert(st.completed?, 'should be complete.')
+      step3.strategy = nil
+      st.step = step3
+      refute(st.completed?, 'should not be complete.')
       step4.run
-      st.step=step4
-      assert(st.completed?, "should be complete.")
+      st.step = step4
+      assert(st.completed?, 'should be complete.')
       refute_nil(st.summary)
     end
   end
