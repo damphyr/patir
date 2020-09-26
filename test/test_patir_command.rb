@@ -87,45 +87,66 @@ module Patir::Test
     ##
     # Clean-up after each test case
     def teardown
-      Dir.delete('missing/') if File.exist?('missing/')
+      File.delete('missing/test.txt') if File.exist?('missing/test.txt')
+      Dir.delete('missing/') if Dir.exist?('missing/')
+    end
+
+    ##
+    # Verify that a Patir::ShellCommand is correctly initialized
+    def test_initialize
+      cmd = Patir::ShellCommand.new(cmd: 'some_cmd',
+                                    name: 'ini_test_cmd',
+                                    timeout: 32,
+                                    working_directory: '/test')
+      assert_equal('', cmd.error)
+      assert_equal('ini_test_cmd', cmd.name)
+      assert_equal('', cmd.output)
+      assert_equal(:not_executed, cmd.status)
+
+      # Command and working directory can only be checked through
+      # stringification
+      assert_equal('ini_test_cmd: some_cmd in /test', cmd.to_s)
     end
 
     ##
     # Verify the successful execution of a command
     def test_echo
-      assert(cmd = Patir::ShellCommand.new(cmd: 'echo hello'))
+      assert(cmd = Patir::ShellCommand.new(cmd: 'sleep 5 && echo hello'))
       assert_instance_of(Patir::ShellCommand, cmd)
       refute(cmd.run?)
       refute(cmd.success?)
       assert(cmd.run)
       assert(cmd.run?)
       assert(cmd.success?)
-      assert_equal('hello', cmd.output.chomp)
+      assert_equal("hello\n", cmd.output)
       assert_equal('', cmd.error)
       assert_equal(:success, cmd.status)
+      assert_in_epsilon(5, cmd.exec_time, 0.1)
     end
 
     ##
-    # Verify that the error status is correctly reported if a Patir::ShellCommand
-    # fails
+    # Verify that the error status is correctly reported if a
+    # Patir::ShellCommand fails
     def test_error
-      assert(cmd = Patir::ShellCommand.new(cmd: 'cd /missing'))
+      assert(cmd = Patir::ShellCommand.new(cmd: 'touch /non_existent/file.txt'))
       refute(cmd.run?)
       refute(cmd.success?)
       assert(cmd.run)
       assert(cmd.run?)
       refute(cmd.success?)
       assert_equal(:error, cmd.status)
+      refute(cmd.error.empty?)
     end
 
     ##
     # Verify that if the command is being passed a working directory it should
     # change into it
     def test_cwd
-      assert(cmd = Patir::ShellCommand.new(cmd: 'echo',
+      assert(cmd = Patir::ShellCommand.new(cmd: 'touch test.txt',
                                            working_directory: 'missing/'))
       assert(cmd.run)
       assert(cmd.success?)
+      assert(File.exist?('missing/test.txt'))
     end
 
     ##
@@ -137,7 +158,7 @@ module Patir::Test
       assert_instance_of(Patir::ShellCommand, cmd)
       assert_equal(:success, cmd.run)
       assert(cmd.success?)
-      assert(File.exist?('missing/'))
+      assert(Dir.exist?('missing/'))
     end
 
     ##
