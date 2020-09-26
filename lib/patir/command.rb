@@ -156,89 +156,95 @@ module Patir
     end
   end
 
-  #This class wraps the Command interface around https://github.com/ahoward/systemu 
+  ##
+  # This class wraps the Command interface around https://github.com/ahoward/systemu
   #
-  #It allows for execution of any shell command on any platform.
-  #
-  #Accepted keys are
-  # :cmd - the shell command to execute (required - ParameterException will be raised).
-  # :working_directory - specify the working directory (default is '.')
-  # :name - assign a name to the command (default is "").
-  # :timeout - if the command runs longer than timeout, it will be interrupted and an error will be set.
-  #
-  #The timeout is set in seconds
+  # It allows for execution of any shell command on any platform.
   class ShellCommand
     include Command
-    #The constructor will throw CommandError if :cmd is missing.
+
+    ##
+    # Initialize a new ShellCommand instance
     #
-    #CommandError will also be thrown if :working_directory does not exist.
-    def initialize params
-      @name=params[:name]
-      @working_directory=params[:working_directory] || "."
-      #we need a command line :)
-      raise ParameterException,"No :command defined" unless params[:cmd]
-      @command=params[:cmd]
-      @status=:not_executed
-      @timeout=params[:timeout]
-      @error=""
-      @output=""
+    # Accepted keys of the Hash passed for initialization are:
+    # * +:cmd+ - the shell command to execute (required - ParameterException
+    #   will be raised if missing)
+    # * +:name+ - assign a name to the command (default is an empty String
+    #   instance)
+    # * +:timeout+ - if the command runs longer than timeout (given in seconds),
+    #   it will be interrupted and an error will be set
+    # * +:working_directory+ - specify the working directory (default is '.')
+    def initialize(params)
+      # A ShellCommand instance without a given commandline is useless
+      raise ParameterException, 'No :cmd given' unless params[:cmd]
+
+      @command = params[:cmd]
+      @error = ''
+      @name = params[:name]
+      @output = ''
+      @status = :not_executed
+      @timeout = params[:timeout]
+      @working_directory = params[:working_directory] || '.'
     end
 
-    #Executes the shell command and returns the status
-    def run context=nil
-      start_time=Time.now
+    ##
+    # Execute the given shell command and return the status
+    def run(_context = nil)
+      start_time = Time.now
       begin
-        #create the working directory if it does not exist
-        FileUtils::mkdir_p(@working_directory,:verbose=>false)
-        #create the actual command, run it, grab stderr and stdout and set output,error, status and execution time
-        if @timeout 
-          exited=nil
-          exitstatus=0
-          status, @output, err = systemu(@command,:cwd=>@working_directory) do |cid|
-              sleep @timeout
-              @error<<"Command timed out after #{@timeout}s"
-              exited=true
-              exitstatus=23
-              begin
-                Process.kill 9,cid
-              rescue => ex
-                @error<<"Failure to kill timeout child process #{cid}: #{ex.message}"
-              end
+        # Create the working directory if it does not exist yet
+        FileUtils.mkdir_p(@working_directory, verbose: false)
+        # Create the actual command, run it, grab stderr and stdout and set
+        # output,error, status and execution time
+        if @timeout
+          exited = nil
+          exit_status = 0
+          status, @output, err = systemu(@command, cwd: @working_directory) do |cid|
+            sleep @timeout
+            @error << "Command timed out after #{@timeout}s"
+            exited = true
+            exit_status = 23
+            begin
+              Process.kill 9, cid
+            rescue => e
+              @error << "Failure to kill timeout child process #{cid}:" \
+                        " #{e.message}"
+            end
           end
-          @error<<"\n#{err}" unless err.empty?
+          @error << "\n#{err}" unless err.empty?
         else
-          status, @output, @error = systemu(@command,:cwd=>@working_directory) 
-          exitstatus = status.exitstatus
+          status, @output, @error = systemu(@command, cwd: @working_directory)
+          exit_status = status.exitstatus
         end
         begin
-          exited||= status.exited?
+          exited ||= status.exited?
         rescue NotImplementedError
-          #oh look, it's jruby
-          exited=true
+          # Oh look, it's JRuby
+          exited = true
         end
-        #lets get the status how we want it
+        # Extract the status and set it
         if exited
-          if exitstatus ==0
-            @status=:success
-          else
-            @status=:error
-          end
+          @status = if exit_status.zero?
+                      :success
+                    else
+                      :error
+                    end
         else
-          @status=:warning
+          @status = :warning
         end
       rescue
-        #if it blows in systemu it will be nil
-        @error<<"\n#{$!.message}"
-        @error<<"\n#{$!.backtrace}" if $DEBUG
-        @status=:error
+        # If it blows in systemu it will be nil
+        @error << "\n#{$ERROR_INFO.message}"
+        @error << "\n#{$ERROR_INFO.backtrace}" if $DEBUG
+        @status = :error
       end
-      #set the time it took us
-      @exec_time=Time.now-start_time
-      return @status
+      # Calculate the execution time
+      @exec_time = Time.now - start_time
+      @status
     end
 
-    def to_s
-      return "#{@name}: #{@command} in #{@working_directory}"
+    def to_s # :nodoc:
+      "#{@name}: #{@command} in #{@working_directory}"
     end
   end
 
