@@ -150,7 +150,7 @@ module Patir
     end
 
     def to_s
-      "#{sequence_id}:name on #{@sequence_runner}, #{@steps.size} steps"
+      "#{sequence_id}:#{@name} on #{@sequence_runner}, #{@steps.size} steps"
     end
 
     private
