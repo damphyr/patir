@@ -1,7 +1,9 @@
 # Copyright (c) 2007-2020 Vassilis Rizopoulos. All rights reserved.
 
-$:.unshift File.join(File.dirname(__FILE__),"..","lib")
-require "minitest/autorun"
+# frozen_string_literal: true
+
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+require 'minitest/autorun'
 require 'patir/command.rb'
 
 class MockCommandObject
@@ -10,17 +12,17 @@ end
 
 class MockCommandWarning
   include Patir::Command
-  def run context=nil
-    @status=:warning
-    return :warning
+  def run(_context = nil)
+    @status = :warning
+    :warning
   end
 end
 
 class MockCommandError
   include Patir::Command
-  def run context=nil
-    @status=:error
-    return :error
+  def run(_context = nil)
+    @status = :error
+    :error
   end
 end
 
@@ -230,7 +232,7 @@ module Patir::Test
     # Verify that Patir::RubyCommand is correctly initialized with a working
     # directory being given
     def test_initialization_with_working_directory
-      sleep_cmd = lambda { sleep 1 }
+      sleep_cmd = -> { sleep 1 }
       cmd = Patir::RubyCommand.new('test_cmd', 'example/path', &sleep_cmd)
       assert_equal(sleep_cmd, cmd.cmd)
       assert_equal('test_cmd', cmd.name)
@@ -250,7 +252,7 @@ module Patir::Test
     # Verify that Patir::RubyCommand is correctly initialized without a working
     # directory being given
     def test_initialization_without_working_directory
-      sleep_cmd = lambda { sleep 1 }
+      sleep_cmd = -> { sleep 1 }
       cmd = Patir::RubyCommand.new('test_cmd', &sleep_cmd)
       assert_equal(sleep_cmd, cmd.cmd)
       assert_equal('test_cmd', cmd.name)

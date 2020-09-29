@@ -1,5 +1,7 @@
 # Copyright (c) 2007-2020 Vassilis Rizopoulos. All rights reserved.
 
+# frozen_string_literal: false
+
 require 'English'
 require 'observer'
 require 'fileutils'
@@ -206,7 +208,7 @@ module Patir
             exit_status = 23
             begin
               Process.kill 9, cid
-            rescue => e
+            rescue StandardError => e
               @error << "Failure to kill timeout child process #{cid}:" \
                         " #{e.message}"
             end
@@ -223,16 +225,16 @@ module Patir
           exited = true
         end
         # Extract the status and set it
-        if exited
-          @status = if exit_status.zero?
+        @status = if exited
+                    if exit_status.zero?
                       :success
                     else
                       :error
-                    end
-        else
-          @status = :warning
-        end
-      rescue
+                              end
+                  else
+                    :warning
+                  end
+      rescue StandardError
         # If it blows in systemu it will be nil
         @error << "\n#{$ERROR_INFO.message}"
         @error << "\n#{$ERROR_INFO.backtrace}" if $DEBUG

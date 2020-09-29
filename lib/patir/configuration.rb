@@ -45,10 +45,10 @@ module Patir
   #         @name = tool_name
   #       end
   #     end
-  #     
+  #
   #     class SimpleConfigurator
   #       include SimpleConfiguration
-  #       
+  #
   #       def configuration
   #         return @name
   #       end
@@ -145,7 +145,7 @@ module Patir
       @logger&.debug($ERROR_INFO)
       raise ConfigurationException.new, \
             "Encountered an unknown directive in configuration file '#{filename}':\n#{$ERROR_INFO.message}"
-    rescue
+    rescue StandardError
       @logger&.debug($ERROR_INFO)
       # Just wrap the exception for differentiation
       raise ConfigurationException.new, $ERROR_INFO.message.to_s

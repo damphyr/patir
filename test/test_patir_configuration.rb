@@ -99,7 +99,7 @@ module Patir::Test
       exc = assert_raises(Patir::ConfigurationException) do
         Patir::Configurator.new('samples/failed_unknown.cfg')
       end
-      assert_match(/Encountered an unknown directive in configuration file 'samples\/failed_unknown.cfg':\nundefined method `foo=' for #<Patir::Configurator:0x\w+>/, exc.message)
+      assert_match(%r{Encountered an unknown directive in configuration file 'samples/failed_unknown.cfg':\nundefined method `foo=' for #<Patir::Configurator:0x\w+>}, exc.message)
     end
 
     ##
@@ -109,8 +109,8 @@ module Patir::Test
         Patir::Configurator.new('samples/syntax.cfg')
       end
       assert_equal("Syntax error in the configuration file 'samples/syntax.cfg'" \
-                   ":\n#{File.expand_path('../../lib/patir', __FILE__)}" \
-                   "/configuration.rb:135: syntax error," \
+                   ":\n#{File.expand_path('../lib/patir', __dir__)}" \
+                   '/configuration.rb:135: syntax error,' \
                    " unexpected end-of-input, expecting '}'",
                    exc.message)
     end
