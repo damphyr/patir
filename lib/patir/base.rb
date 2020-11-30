@@ -1,5 +1,7 @@
-#  Copyright (c) 2007-2012 Vassilis Rizopoulos. All rights reserved.
+# Copyright (c) 2007-2020 Vassilis Rizopoulos. All rights reserved.
+
 require 'logger'
+
 #This is the base module of the Patir system. It contains some usefull helper methods used by all child projects.
 module Patir
   #The Patir version used
@@ -25,30 +27,33 @@ module Patir
         msg2str(msg)]
     end
   end
-  #Just making Logger usage easier
+
+  ##
+  # Set up a default logger for usage by top-level scripts and library users
   #
-  #This is for use on top level scripts.
+  # This creates a default logger fit for the usage with and around Patir.
   #
-  #It creates a logger just as we want it.
+  # +mode+ can be
+  # * +:mute+ to set the level to +FATAL+
+  # * +:silent+ to set the level to +WARN+
+  # * +:debug+ to set the level to +DEBUG+. Debug is set also if $DEBUG is
+  #   +true+
   #
-  #mode can be
-  # :mute to set the level to FATAL
-  # :silent to set the level to WARN
-  # :debug to set the level to DEBUG. Debug is set also if $DEBUG is true.
-  #The default logger level is INFO
-  def self.setup_logger(filename=nil,mode=nil)
-    if filename
-      logger=Logger.new(filename) 
-    else
-      logger=Logger.new(STDOUT)
+  # The default log level is +INFO+.
+  def self.setup_logger(filename = nil, mode = nil)
+    logger = if filename
+               Logger.new(filename)
+             else
+               Logger.new(STDOUT)
+             end
+    logger.level = Logger::INFO
+    if [Logger::INFO, Logger::FATAL, Logger::WARN, Logger::DEBUG].member?(mode)
+      logger.level = mode
     end
-    logger.level=Logger::INFO
-    logger.level=mode if [Logger::INFO,Logger::FATAL,Logger::WARN,Logger::DEBUG].member?(mode)
-    logger.level=Logger::FATAL if mode==:mute
-    logger.level=Logger::WARN if mode==:silent
-    logger.level=Logger::DEBUG if mode==:debug || $DEBUG
-    logger.formatter=PatirLoggerFormatter.new
-    #logger.datetime_format="%Y%m%d %H:%M:%S"
-    return logger
+    logger.level = Logger::FATAL if mode == :mute
+    logger.level = Logger::WARN if mode == :silent
+    logger.level = Logger::DEBUG if mode == :debug || $DEBUG
+    logger.formatter = PatirLoggerFormatter.new
+    logger
   end
 end
