@@ -137,7 +137,7 @@ module Patir
               begin
                 Process.kill 9,cid
               rescue => ex
-                @error<<"Failure to kill timeout child process #{cid}: #{ex.message}"
+                @error<<"Failed to kill child process #{cid} after timeout: #{ex.message}"
               end
           end
           @error<<"\n#{err}" unless err.empty?
