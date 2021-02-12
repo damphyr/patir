@@ -73,6 +73,7 @@ module Patir
     #
     #Call this if you want to pretend that it was never executed
     def reset
+      @backtrace=""
       @exec_time=0
       @output=""
       @error=""
