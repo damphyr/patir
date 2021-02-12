@@ -134,7 +134,11 @@ module Patir
               @error<<"Command timed out after #{@timeout}s"
               exited=true
               exitstatus=23
-              Process.kill 9,cid
+              begin
+                Process.kill 9,cid
+              rescue => ex
+                @error<<"Failed to kill child process #{cid} after timeout: #{ex.message}"
+              end
           end
           @error<<"\n#{err}" unless err.empty?
         else
