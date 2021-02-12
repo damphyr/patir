@@ -26,6 +26,7 @@ class TestCommand<Minitest::Test
   #tests the default values set by the module
   def test_module
     obj=MockCommandObject.new
+    assert_equal("",obj.backtrace)
     assert_equal("",obj.name)
     assert_equal(:not_executed,obj.status)
     assert(!obj.run?)
@@ -242,6 +243,7 @@ class TestRubyCommand<Minitest::Test
     cmd=RubyCommand.new("test"){raise "Error"}
     assert(cmd.run)
     assert(!cmd.success?, "Successful?!")
+    refute(cmd.backtrace.empty?)
     assert_equal("\nError", cmd.error)
     assert_equal(:error, cmd.status)
   end
