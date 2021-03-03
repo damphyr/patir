@@ -4,20 +4,27 @@
 
 [patir](http://patir.rubyforge.org) provides code to enable project automation tasks:
 
- * A logging format for ruby's built-in Logger
- * A command abstraction with a platform independent implementation for running shell commands and ruby code
- * Command sequences using the same command abstraction as single commands.
- * Configuration format for configuration files written in ruby.
+* an adjusted logging format for the built-in logger of Ruby
+* a command abstraction with a platform independent implementation for running
+  shell commands or Ruby code
+* sequences of commands using the same command abstraction as single commands.
+* a Configuration class and format for loading configuration files written in Ruby.
 
 ## Why?
-We've been using the same things again and again and can't be bothered to code it anew every time.
 
-The command abstraction has been used the most, the Logger defaults and formatting the least.
+Some of the same things are used again and again and shouldn't be rewritten
+every time.
+
+The command abstraction is the primary and most used feature of this gem. The
+logger creation convenience method and the adjusted logger formatter are used
+the least.
 
 ## Dependencies
-The platform independence for shell commands is achieved with the help of the [systemu](https://github.com/ahoward/systemu) gem.
 
-Everything else is pure Ruby.
+The platform independence for shell command execution is achieved with the
+help of the [systemu](https://github.com/ahoward/systemu) gem.
+
+Everything else is written in pure Ruby.
 
 ## Install
 
