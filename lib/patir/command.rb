@@ -1,77 +1,122 @@
-#  Copyright (c) 2007-2012 Vassilis Rizopoulos. All rights reserved.
+# Copyright (c) 2007-2012 Vassilis Rizopoulos. All rights reserved.
+
 require 'observer'
 require 'fileutils'
 require 'systemu'
 require 'patir/base'
 
 module Patir
-  #This module defines the interface for a Command object.
+  ##
+  # Module defining the interface for a Command object
   #
-  #It more or less serves the purpose of documenting the interface/contract expected 
-  #by a class that executes commands and returns their output and exit status.
+  # This module more or less serves the purpose of documenting the interface or
+  # contract expected by classes that execute commands and return their output
+  # and exit status.
   #
-  #There is also that bit of functionality that facilitates grouping multiple commands into command sequences
+  # All methods initialize member variables with meaningful values if needed.
   #
-  #The various methods initialize member variables with meaningful values where needed.
+  # Classes including Command should implement the #run method. Internally this
+  # method should set the +exec_time+, +output+ and +status+ values accordingly.
   #
-  #Using the contract means implementing the Command#run method. This method should then set 
-  #the output, exec_time and status values according to the implementation.
+  # RubyCommand and ShellCommand can be used as practical examples.
   #
-  #Take a look at ShellCommand and RubyCommand for a couple of practical examples.
-  #
-  #It is a good idea to rescue all exceptions. You can then set error to return the exception message.
+  # Generally exceptions should be rescued and @error be set accordingly.
   module Command
-    attr_writer :output, :name, :exec_time,:error,:status
-    attr_accessor :number,:strategy
-    #returns the commands alias/name
+    ##
+    # Output the command emitted signalling erroneous conditions
+    attr_writer :error
+    ##
+    # Time the command took for execution
+    attr_writer :exec_time
+    ##
+    # A short descriptive name for the command
+    attr_writer :name
+    ##
+    # General output of the command
+    attr_writer :output
+    ##
+    # Indicates the status of the instance representing the command
+    #
+    # Valid states are:
+    # * +:not_executed+ - when the command was not run
+    # * +:success+ - when the command has finished successfully
+    # * +:error+ - when the command has an error
+    # * +:warning+ - when the command finished without errors, but there where warnings
+    attr_writer :status
+    ##
+    # Optional number (may be useful in sequences of commands)
+    attr_accessor :number
+    ##
+    # Information on how a failure of the command shall be handled
+    attr_accessor :strategy
+
+    ##
+    # Returns the command's alias name
     def name
-      #initialize nil values to something meaningful
+      # Initialize nil values to something meaningful
       @name||=""
       return @name
     end
-    #returns the output of the command
+
+    ##
+    # Returns the output of the command
     def output
-      #initialize nil values to something meaningful
+      # Initialize nil values to something meaningful
       @output||=""
       return @output
     end
-    #returns the error output for the command
+
+    ##
+    # Returns the error output for the command
     def error
-      #initialize nil values to something meaningful
+      # Initialize nil values to something meaningful
       @error||=""
       return @error
     end
-    #returns the error output for the command
+
+    ##
+    # Returns a backtrace for the command
     def backtrace
-      #initialize nil values to something meaningful
+      # Initialize nil values to something meaningful
       @backtrace||=""
       return @backtrace
     end
-    #returns the execution time (duration) for the command
+
+    ##
+    # Returns the execution time (duration) for the command
     def exec_time
-      #initialize nil values to something meaningful
+      # Initialize nil values to something meaningful
       @exec_time||=0
       return @exec_time
     end
-    #returns true if the command has finished succesfully
+
+    ##
+    # Returns true if the command has finished successfully
     def success?
       return true if self.status==:success
       return false
     end
-    #returns true if the command has been executed
+
+    ##
+    # Returns true if the command has been executed
     def run?
       executed?
     end
-    #executes the command and returns the status of the command.
+
+    ##
+    # Execute the command and return the status of the command
     #
-    #overwrite this method in classes that include Command
+    # This method should be overridden by classes which include Command.
     def run context=nil
       @status=:success
       return self.status
     end
-    #clears the status and output of the command.
+
+    ##
+    # Clear all internal state of the command
     #
-    #Call this if you want to pretend that it was never executed
+    # This method should be called if the class shall be reset to a state as if
+    # the command never got executed.
     def reset
       @backtrace=""
       @exec_time=0
@@ -79,18 +124,18 @@ module Patir
       @error=""
       @status=:not_executed
     end
-    #returns false if the command has not been run, alias for run?
+
+    ##
+    # Returns false if the command has not been run
+    #
+    # This is an alias for #run?.
     def executed?
       return false if self.status==:not_executed
       return true
     end
-    #returns the command status.
-    #
-    #valid stati are
-    # :not_executed when the command was not run
-    # :success when the command has finished succesfully
-    # :error when the command has an error
-    # :warning when the command finished without errors, but there where warnings
+
+    ##
+    # Returns the command's status
     def status
       #initialize nil values to something meaningful
       @status||=:not_executed
@@ -98,22 +143,28 @@ module Patir
     end
   end
 
-  #This class wraps the Command interface around https://github.com/ahoward/systemu 
+  ##
+  # Class wrapping the Command interface around
+  # systemu[https://github.com/ahoward/systemu]
   #
-  #It allows for execution of any shell command on any platform.
+  # It allows the execution of any shell command on any platform.
   #
-  #Accepted keys are
-  # :cmd - the shell command to execute (required - ParameterException will be raised).
-  # :working_directory - specify the working directory (default is '.')
-  # :name - assign a name to the command (default is "").
-  # :timeout - if the command runs longer than timeout, it will be interrupted and an error will be set.
-  #
-  #The timeout is set in seconds
+  # Accepted keys of +param+ are:
+  # * +:cmd+ - the shell command to execute (required - a ParameterException
+  #   will be raised if missing)
+  # * +:name+ - a descriptive name for the command (defaults to an empty string)
+  # * +:timeout+ - duration after which the execution of the command will be
+  #   interrupted and an error status be set (no timeout if none given)
+  # * +:working_directory+ - specifies the working directory (defaults to '.')
   class ShellCommand
     include Command
-    #The constructor will throw CommandError if :cmd is missing.
+
+    ##
+    # Initialize a new ShellCommand instance
     #
-    #CommandError will also be thrown if :working_directory does not exist.
+    # A ParameterException will be raised if the hash passed to +params+ does
+    # not contain a +:cmd+ key. A CommandError will be raised if a passed
+    # +:working_directory+ does not exist.
     def initialize params
       @name=params[:name]
       @working_directory=params[:working_directory] || "."
@@ -126,7 +177,11 @@ module Patir
       @output=""
     end
 
-    #Executes the shell command and returns the status
+    ##
+    # Run the command passed to the initialize method
+    #
+    # The status of the instance is set to +:success+ only if the command
+    # orderly completed execution and set an exit code of +0+.
     def run context=nil
       start_time=Time.now
       begin
@@ -179,31 +234,66 @@ module Patir
       return @status
     end
 
+    ##
+    # Return a textual description of the command instance
+    #
+    # The returned string will follow the following pattern:
+    #
+    #     <name>: <command> in <working_directory>
     def to_s
       return "#{@name}: #{@command} in #{@working_directory}"
     end
   end
 
-  #CommandSequence describes a set of commands to be executed in sequence.
+  ##
+  # Class for handling a set of commands to be executed in sequence
   #
-  #Each instance of CommandSequence contains a set of Patir::Command instances, which are the steps to perform.
+  # Each instance of CommandSequence contains a set of Patir::Command instances
+  # which are the steps that shall be performed.
   #
-  #The steps are executed in the sequence they are added. A CommandSequence can terminate immediately on step failure or it can continue. It will still be marked as failed as long as a single step fails.
+  # The steps are executed in the sequence in which they were added.
   #
-  #Access to the CommandSequence status is achieved using the Observer pattern.
+  # Depending on a step's +strategy+ the sequence can terminate immediately upon
+  # a step failure or continue. If it continues it will still be marked as
+  # failed if a single step failed.
   #
-  #The :sequence_status message contains the status of the sequence, an instance of the class CommandSequenceStatus.
+  # The status of the CommandSequence can be accessed using the Observer
+  # pattern. The +:sequence_status+ message contains the status of the sequence
+  # represented by an instance of the CommandSequenceStatus class.
   #
-  #CommandSequence is designed to be reusable, so it does not correspond to a single sequence run, rather it corresponds to 
-  #the currently active run. Calling reset, or run  will discard the old state and create a new sequence 'instance' and status.
+  # CommandSequence is designed to be re-runnable. It does not correspond to
+  # just a single sequence but more to the currently active run. Calling #reset
+  # or #run on it will discard the state of previous runs and will create a new
+  # "instance" and state.
   #
-  #No threads are spawned by CommandSequence (that doesn't mean the commands cannot, but it is not advisable).
+  # CommandSequence itself does not spawn any threads (commands still can do,
+  # but this is generally not advisable).
   class CommandSequence
     include Observable
-    attr_reader :name,:state,:steps
-    attr_reader :sequence_runner
-    attr_reader :sequence_id
 
+    ##
+    # A descriptive name for the CommandSequence
+    attr_reader :name
+    ##
+    # A numerical id of the CommandSequence
+    attr_reader :sequence_id
+    ##
+    # Information (e.g. hostname) of the runner of the CommandSequence
+    attr_reader :sequence_runner
+    ##
+    # A CommandSequenceStatus instance representing the state of the
+    # CommandSequence (i.e. information about the success of the execution of
+    # the sequence's steps)
+    attr_reader :state
+    ##
+    # Array of all the steps which make up the CommandSequence instance
+    attr_reader :steps
+
+    ##
+    # Initialize a new CommandSequence instance
+    #
+    # * +name+ - a descriptive name
+    # * +sequence_runner+ - name of the runner executing the sequence
     def initialize name,sequence_runner=""
       @name=name
       @steps||=Array.new
@@ -212,20 +302,27 @@ module Patir
       reset
     end
 
-    #sets the sequence runner attribute updating status
+    ##
+    # Set the internal +sequence_runner+ attribute and update the internally
+    # held CommandSequenceStatus instance
     def sequence_runner=name
       @sequence_runner=name
       @state.sequence_runner=name
     end
 
-    #sets the sequence id attribute updating status
+    ##
+    # Set the internal +sequence_id+ attribute and update the internally held
+    # CommandSequenceStatus instance
     def sequence_id=name
       @sequence_id=name
       @state.sequence_id=name
     end
-    #Executes the CommandSequence.
+
+    ##
+    # Execute the CommandSequence
     #
-    #Will run all step instances in sequence observing the exit strategies on warning/failures
+    # This will run all step instances in the sequence observing the exit
+    # strategies of each command on warnings or failures.
     def run context=nil
       #set the start time
       @state.start_time=Time.now
@@ -278,15 +375,20 @@ module Patir
       @state.status=running_status
       notify(:sequence_status=>@state)
     end
-    #Adds a step to the CommandSequence using the given exit strategy.
+
+    ##
+    # Adds a step to the CommandSequence using the given exit strategy
     #
-    #Steps are always added at the end of the build sequence. A step should quack like a Patir::Command.
+    # New steps are always added to the end of the sequence. A step should quack
+    # like a Command.
     #
-    #Valid exit strategies are 
-    # :fail_on_error - CommandSequence terminates on failure of this step
-    # :flunk_on_error - CommandSequence is flagged as failed but continues to the next step
-    # :fail_on_warning - CommandSequence terminates on warnings in this step
-    # :flunk_on_warning - CommandSequence is flagged as failed on warning in this step
+    # Valid exit strategies are:
+    # * +:fail_on_error+ - CommandSequence terminates on a failure of the step
+    # * +:flunk_on_error+ - CommandSequence is flagged as failed but continues
+    #   with the next step
+    # * +:fail_on_warning+ - CommandSequence terminates on warnings of the step
+    # * +:flunk_on_warning+ - CommandSequence is flagged as failed on warning in
+    #   this step but continues
     def add_step step,exit_strategy=:fail_on_error
       #duplicate the command
       bstep=step.dup
@@ -304,8 +406,11 @@ module Patir
       return bstep
     end
 
-    #Resets the status. This will set :not_executed status, 
-    #and set the start and end times to nil.
+    ##
+    # Reset the status of the CommandSequence instance
+    #
+    # This will set the status to +:not_executed+, reset all added steps and set
+    # the start and end times to +nil+.
     def reset
       #reset all the steps (stati and execution times)
       @steps.each{|step| step.reset}
@@ -319,36 +424,81 @@ module Patir
       notify(:sequence_status=>@state)
     end
 
-    #Returns true if the sequence has finished executing
+    ##
+    # Returns +true+ if the sequence finished its execution
     def completed?  
       return @state.completed? 
     end
 
+    ##
+    # Return a textual description of the CommandSequence instance
+    #
+    # The returned string will follow the following pattern:
+    #
+    #     <sequence_id>:<name> on <sequence_runner>, <step_qty> steps
     def to_s
       "#{sequence_id}:#{:name} on #{@sequence_runner}, #{@steps.size} steps"
     end
+
     private
-    #observer notification
+
+    ##
+    # Notify observers of changes
     def notify *params
       changed
       notify_observers(*params)
     end
   end
 
-  #CommandSequenceStatus represents the status of a CommandSequence, including the status of all the steps for this sequence.
+  ##
+  # CommandSequenceStatus represents the status of a CommandSequence including
+  # the status of all the steps of the sequence
   #
-  #In order to extract the status from steps, classes should quack to the rythm of Command. CommandSequenceStatus does this, so you can nest Stati
+  # In order to extract the status from steps, classes should quack to the rythm
+  # of Command. CommandSequenceStatus does this, so stati can be nested.
   #
-  #The status of an action sequence is :not_executed, :running, :success, :warning or :error and represents the overall status
-  # :not_executed is set when all steps are :not_executed
-  # :running is set while the sequence is running.
-  #Upon completion or interruption one of :success, :error or :warning will be set.
-  # :success is set when all steps are succesfull.
-  # :warning is set when at least one step generates warnings and there are no failures.
-  # :error is set when after execution at least one step has the :error status
+  # The status of an action sequence can be one of the following and represents
+  # the overall status:
+  # * +:not_executed+ is set when all steps are +:not_executed+
+  # * +:running+ is set while the sequence is running
+  # Upon completion or interruption one of +:success+, +:error+ or +:warning+
+  # will be set:
+  # * +:success+ is set when all steps completed successfully
+  # * +:warning+ is set when at least one step generates a warnings and there
+  #   are no failures
+  # * +:error+ is set when after execution at least one step has the +:error+
+  #   status
   class CommandSequenceStatus
-    attr_accessor :start_time,:stop_time,:sequence_runner,:sequence_name,:status,:step_states,:sequence_id,:strategy
-    #You can pass an array of Commands to initialize CommandSequenceStatus
+    ##
+    # A numerical id of the CommandSequenceStatus
+    attr_accessor :sequence_id
+    ##
+    # A descriptive name for the command sequence status representation
+    attr_accessor :sequence_name
+    ##
+    # Information (e.g. hostname) of the runner of the CommandSequence
+    attr_accessor :sequence_runner
+    ##
+    # The time when the CommandSequenceStatus instance was initialized
+    attr_accessor :start_time
+    ##
+    # The overall status of the CommandSequence
+    attr_accessor :status
+    ##
+    # Hash mapping a step's number to a collection of its attributes
+    attr_accessor :step_states
+    ##
+    # The time when the execution stopped or was completed
+    attr_accessor :stop_time
+    ##
+    # Information on how a failure of the command shall be handled
+    attr_accessor :strategy
+
+    ##
+    # Initialize a new CommandSequenceStatus instance
+    #
+    # * +sequence_name+ - a descriptive name for the sequence
+    # * +steps+ - optional list of steps which will be passed to #step= each
     def initialize sequence_name,steps=nil
       @sequence_name=sequence_name
       @sequence_runner=""
@@ -360,23 +510,29 @@ module Patir
       steps.each{|step| self.step=step } if steps
       @start_time=Time.now
     end
+
+    ##
+    # Returns +true+ if the represented sequence is currently being executed
     def running?
       return true if :running==@status
       return false
     end
-    #true is returned when all steps were succesfull.
+
+    ##
+    # Returns +true+ if all steps completed successfully
     def success?
       return true if :success==@status
       return false
     end
 
-    #A sequence is considered completed when:
+    ##
+    # Checks if the represented sequence is completed
     #
-    #a step has errors and the :fail_on_error strategy is used
-    #
-    #a step has warnings and the :fail_on_warning strategy is used
-    #
-    #in all other cases if none of the steps has a :not_executed or :running status
+    # It is considered completed if:
+    # * a step has errors and the +:fail_on_error+ strategy is used
+    # * a step has warnings and the +:fail_on_warning+ strategy is used
+    # * in all other cases if none of the steps has a +:not_executed+ or
+    #   +:running+ status
     def completed?
       #this saves us iterating once+1 when no execution took place
       return false if !self.executed?
@@ -387,12 +543,20 @@ module Patir
       @step_states.each{|state| return false if state[1][:status]==:not_executed || state[1][:status]==:running }
       return true
     end
-    #A nil means there is no step with that number
+
+    ##
+    # Query the state of the step with a particular +number+
+    #
+    # If there is no step with such +number+, then +nil+ is returned.
     def step_state number
       s=@step_states[number] if @step_states[number]
       return s
     end
-    #Adds a step to the state. The step state is inferred from the Command instance __step__
+
+    ##
+    # Add a step
+    #
+    # The internally held state is updated accordingly.
     def step=step
       @step_states[step.number]={:name=>step.name,
         :status=>step.status,
@@ -422,7 +586,9 @@ module Patir
         end
       end#unless running
     end
-    #produces a brief text summary for this status
+
+    ##
+    # Produce a short text summary of this CommandSequenceStatus instance
     def summary
       sum=""
       sum<<"#{@sequence_id}:" if @sequence_id
@@ -439,57 +605,110 @@ module Patir
       end 
       return sum
     end
+
+    ##
+    # Return a textual description of the CommandSequenceStatus instance
+    #
+    # The returned string will follow the following pattern:
+    #
+    #     '<sequence_id>':'<sequence_name>' on '<sequence_runner' started at <start_time>.<step_states.size> steps
     def to_s
       "'#{sequence_id}':'#{@sequence_name}' on '#{@sequence_runner}' started at #{@start_time}.#{@step_states.size} steps"
     end
+
+    ##
+    # Return the execution time if it can be computed or +0+ otherwise
     def exec_time
       return @stop_time-@start_time if @stop_time
       return 0
     end
+
+    ##
+    # Return the descriptive name
     def name
       return @sequence_name
-    end  
+    end
+
+    ##
+    # Return the internally held sequence id
     def number
       return @sequence_id
     end
+
+    ##
+    # Alias for the #summary method
     def output
       return self.summary
     end
+
+    ##
+    # _Unused_ - always returns an empty string
     def error
       return ""
     end
+
+    ##
+    # Returns +true+ if the represented sequence was or is being executed or
+    # +false+ otherwise
     def executed?
       return true unless @status==:not_executed
       return false
     end
   end
 
-  #This class allows you to wrap Ruby blocks and handle them like Command
+  ##
+  # Class allowing to wrap Ruby blocks and handle them like Command
   #
-  #Provide a block to RubyCommand#new and you can execute the block using
-  #RubyCommand#run
+  # A block provided to RubyCommand#initialize can be executed through the #run
+  # method.
   #
-  #The block receives the instance of RubyCommand so you can set the output and error output.
+  # The block receives the instance of RubyCommand so you can set the output and
+  # error output through its accessors.
   #
-  #If the block runs to the end the command is considered successful.
+  # If the passed in block runs to the end the command is considered executed
+  # successfully.
   #
-  #Raising an exception in the block will set the command status to :error. 
+  # If an exception is raised in the block the command status will be set to
+  # +:error+.
   #
-  #The exception message will be appended to the error output of the command
+  # The exception's message will be appended to the error output of the command.
   #
-  #== Examples
-  #An example (using the excellent HighLine lib) of a CLI prompt as a RubyCommand
-  # RubyCommand.new("prompt") do |cmd|  
-  #   cmd.output=""
-  #   cmd.error=""
-  #   unless HighLine.agree("#{step.text}?")
-  #     cmd.error="Why not?"
-  #     raise "You did not agree" 
-  #   end
-  # end
+  # == Example
+  #
+  # An example (using the excellent HighLine lib) of a CLI prompt as a
+  # RubyCommand:
+  #
+  #     RubyCommand.new("prompt") do |cmd|
+  #       cmd.output=""
+  #       cmd.error=""
+  #       unless HighLine.agree("#{step.text}?")
+  #         cmd.error="Why not?"
+  #         raise "You did not agree"
+  #       end
+  #     end
   class RubyCommand
     include Patir::Command
-    attr_reader :cmd,:working_directory,:context
+
+    ##
+    # The block which shall be executed upon invocation of the #run method
+    attr_reader :cmd
+    ##
+    # The context which is accessible by the block during execution (this is
+    # only valid during execution of the block and can be used by the block to
+    # access the context passed to the #run method)
+    attr_reader :context
+    ##
+    # The working directory within which the block will be executed
+    attr_reader :working_directory
+
+    ##
+    # Initialize a new RubyCommand instance
+    #
+    # * +name+ - a short descriptive name for the command
+    # * +working_directory+ - path to the working directory in which the command
+    #   shall be executed (defaults to the current directory if +nil+)
+    # * +block+ - the block which shall be executed upon invocation of the #run
+    #   method
     def initialize name,working_directory=nil,&block
       @name=name
       @working_directory=working_directory||"."
@@ -499,7 +718,12 @@ module Patir
         raise "You need to provide a block"
       end
     end
-    #Runs the associated block
+
+    ##
+    # Run the code block which got passed to the #initialize method
+    #
+    # This sets the internal @status variable according to the result of the
+    # execution of the block.
     def run context=nil
       @run=true
       @context=context
