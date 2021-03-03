@@ -5,4 +5,5 @@ group :development do
   gem "hoe", "~>3.22.3", :require => false
   gem "minitest", "~>5.14.3", :require => false
   gem "rdoc", "~>6.3.0", :require => false
+  gem "rubocop", "~>1.11.0", :require => false
 end
