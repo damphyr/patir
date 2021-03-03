@@ -2,7 +2,21 @@
 
 require 'logger'
 
-#This is the base module of the Patir system. It contains some usefull helper methods used by all child projects.
+##
+# The base module of the Patir gem
+#
+# This module contains a collection of classes, methods and modules useful for
+# other projects, the most relevant ones being:
+#
+# * Command - mix-in for any class representing an executable command
+#   * RubyCommand - class to execute a Ruby code snippet as a command
+#   * ShellCommand - class to execute shell commands in a platform independent
+#     manner
+# * CommandSequence - class holding and allowing the sequential execution of
+#   series of commands
+# * Configurator - class allowing to write configuration files as Ruby code and
+#   load/parse them conveniently
+# * Version - version information of this gem
 module Patir
   ##
   # Version information of the Patir gem
