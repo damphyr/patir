@@ -92,7 +92,7 @@ module Patir
     if filename
       logger=Logger.new(filename) 
     else
-      logger=Logger.new(STDOUT)
+      logger=Logger.new($stdout)
     end
     logger.level=Logger::INFO
     logger.level=mode if [Logger::INFO,Logger::FATAL,Logger::WARN,Logger::DEBUG].member?(mode)
