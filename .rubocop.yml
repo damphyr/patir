@@ -1,0 +1,35 @@
+---
+
+Metrics/AbcSize:
+  Max: 20
+Metrics/BlockLength:
+  Max: 120
+Layout/LineLength:
+  Max: 200
+Metrics/MethodLength:
+  Max: 25
+Style/AsciiComments:
+  Enabled: false
+Style/ClassAndModuleChildren:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  Enabled: false
+Style/GlobalVars:
+  Enabled: false
+Style/HashSyntax:
+  EnforcedStyle: hash_rockets
+Style/NumericLiterals:
+  Enabled: false
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+Style/RedundantReturn:
+  Enabled: false
+Style/StringLiteralsInInterpolation:
+  Enabled: false
+Style/SymbolArray:
+  Enabled: false
+Style/ConditionalAssignment:
+  EnforcedStyle: assign_inside_condition
+AllCops:
+  Exclude:
+    - "out/**/*"
