@@ -1,6 +1,8 @@
 # Copyright (c) 2007-2012 Vassilis Rizopoulos. All rights reserved.
 
-require 'logger'
+# frozen_string_literal: true
+
+require "logger"
 
 ##
 # The base module of the Patir gem
@@ -23,16 +25,16 @@ module Patir
   module Version
     ##
     # The major version of the Patir gem
-    MAJOR=0
+    MAJOR = 0
     ##
     # The minor version of the Patir gem
-    MINOR=9
+    MINOR = 9
     ##
     # The tiny version of the Patir gem
-    TINY=0
+    TINY = 0
     ##
     # The version information of the Patir gem as a string
-    STRING=[ MAJOR, MINOR, TINY ].join( "." )  	
+    STRING = [MAJOR, MINOR, TINY].join(".")
   end
 
   ##
@@ -41,22 +43,24 @@ module Patir
   # Currently this is thrown by ShellCommand only. It's thrown in case the
   # +params+ hash passed to the initialize method of ShellCommand lacks a +:cmd+
   # key.
-  class ParameterException<RuntimeError
+  class ParameterException < RuntimeError
   end
-  
+
   ##
   # Modified version of the default log message formatter of Ruby
-  class PatirLoggerFormatter<Logger::Formatter
+  class PatirLoggerFormatter < Logger::Formatter
     ##
     # Format string defining the format of the created log messages
-    Format="[%s] %5s: %s\n"
+    FORMAT = "[%s] %5s: %s\n"
 
     ##
     # Initialize a new PatirLoggerFormatter instance
     def initialize
-      @datetime_format="%Y%m%d %H:%M:%S"
+      super
+
+      @datetime_format = "%Y%m%d %H:%M:%S"
     end
-    
+
     ##
     # Create and return a log message representing the passed in arguments
     #
@@ -66,9 +70,8 @@ module Patir
     #   message
     # * +progname+ - _unused_
     # * +msg+ - the actual message to be logged
-    def call severity, time, progname, msg
-      Format % [format_datetime(time), severity,
-        msg2str(msg)]
+    def call(severity, time, _progname, msg)
+      format(FORMAT, format_datetime(time), severity, msg2str(msg))
     end
   end
 
@@ -88,19 +91,18 @@ module Patir
   #   * +:debug+ - to set the log level to +Logger::DEBUG+
   #   * +:mute+ - to set the log level to +Logger::FATAL+
   #   * +:silent+ - to set the log level to +Logger::WARN+
-  def self.setup_logger(filename=nil,mode=nil)
+  def self.setup_logger(filename = nil, mode = nil)
     if filename
-      logger=Logger.new(filename) 
+      logger = Logger.new(filename)
     else
-      logger=Logger.new($stdout)
+      logger = Logger.new($stdout)
     end
-    logger.level=Logger::INFO
-    logger.level=mode if [Logger::DEBUG, Logger::FATAL, Logger::INFO, Logger::UNKNOWN, Logger::WARN].member?(mode)
-    logger.level=Logger::FATAL if mode==:mute
-    logger.level=Logger::WARN if mode==:silent
-    logger.level=Logger::DEBUG if mode==:debug || $DEBUG
-    logger.formatter=PatirLoggerFormatter.new
-    #logger.datetime_format="%Y%m%d %H:%M:%S"
+    logger.level = Logger::INFO
+    logger.level = mode if [Logger::DEBUG, Logger::FATAL, Logger::INFO, Logger::UNKNOWN, Logger::WARN].member?(mode)
+    logger.level = Logger::FATAL if mode == :mute
+    logger.level = Logger::WARN if mode == :silent
+    logger.level = Logger::DEBUG if mode == :debug || $DEBUG
+    logger.formatter = PatirLoggerFormatter.new
     return logger
   end
 end
