@@ -95,7 +95,7 @@ module Patir
       logger=Logger.new($stdout)
     end
     logger.level=Logger::INFO
-    logger.level=mode if [Logger::INFO,Logger::FATAL,Logger::WARN,Logger::DEBUG].member?(mode)
+    logger.level=mode if [Logger::DEBUG, Logger::FATAL, Logger::INFO, Logger::UNKNOWN, Logger::WARN].member?(mode)
     logger.level=Logger::FATAL if mode==:mute
     logger.level=Logger::WARN if mode==:silent
     logger.level=Logger::DEBUG if mode==:debug || $DEBUG
