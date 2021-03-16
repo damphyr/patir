@@ -10,6 +10,12 @@ require "patir/configuration"
 
 module Patir
   ##
+  # Mock extension class of Configurator for testing its functionality
+  class MockConfigurator < Patir::Configurator
+    attr_accessor :a_number, :a_string, :another_string
+  end
+
+  ##
   # Verify functionality of the Configurator class
   class TestConfigurator < Minitest::Test
     ##
@@ -26,6 +32,15 @@ module Patir
     end
 
     ##
+    # Verify that new instances of Configurator are created correctly
+    def test_initialize
+      conf = Patir::Configurator.new("samples/empty.cfg")
+      assert_equal("samples/empty.cfg", conf.config_file)
+      assert_kind_of(Logger, conf.logger)
+      assert_equal(File.join(Dir.pwd, "samples"), conf.wd)
+    end
+
+    ##
     # Verify that configuration files can be parsed
     def test_configuration
       c = Patir::Configurator.new("samples/empty.cfg")
@@ -33,6 +48,20 @@ module Patir
 
       c = Patir::Configurator.new("samples/chain.cfg")
       assert_equal(c.configuration, c)
+    end
+
+    ##
+    # Verify that config files are read and values properly retained
+    def test_configuration_loading
+      conf = MockConfigurator.new("samples/empty.cfg")
+
+      conf.load_from_file("samples/chain_some_config.cfg")
+      assert_equal(5, conf.a_number)
+      assert_equal("Hello!", conf.a_string)
+      conf.load_from_file("samples/another_config.cfg")
+      assert_equal(28, conf.a_number)
+      assert_equal("Hello!", conf.a_string)
+      assert_equal("Hello World!", conf.another_string)
     end
 
     ##
