@@ -136,7 +136,7 @@ module Patir
       # Evaluate in the working directory to enable relative paths in
       # configuration
       Dir.chdir(@wd) { eval(cfg_txt, binding) }
-      @logger&.info("Configuration loaded from #{filename}")
+      @logger.info("Configuration loaded from #{filename}")
     rescue ConfigurationException
       # Pass on the exception, do not wrap it again
       raise
