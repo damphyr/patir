@@ -725,7 +725,6 @@ module Patir
     # This sets the internal @status variable according to the result of the
     # execution of the block.
     def run context=nil
-      @run=true
       @context=context
       @error=""
       @output=""
