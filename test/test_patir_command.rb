@@ -310,6 +310,16 @@ class TestRubyCommand < Minitest::Test
   end
 
   ##
+  # Verify that an exception is thrown if no block is passed on initialization
+  def test_initialization_failure
+    assert_raises(
+      RuntimeError, "A block must be provided to RubyCommand upon initialization"
+    ) do
+      Patir::RubyCommand.new("A third command")
+    end
+  end
+
+  ##
   # Verify that a valid block invocation is handled as expected
   def test_normal_execution
     cmd = Patir::RubyCommand.new("Successful command") { sleep 1 }
