@@ -1,5 +1,6 @@
 # Copyright (c) 2007-2012 Vassilis Rizopoulos. All rights reserved.
 
+require "English"
 require 'observer'
 require 'fileutils'
 require 'systemu'
@@ -54,7 +55,7 @@ module Patir
     # Returns the command's alias name
     def name
       # Initialize nil values to something meaningful
-      @name||=""
+      @name ||= ""
       return @name
     end
 
@@ -62,7 +63,7 @@ module Patir
     # Returns the output of the command
     def output
       # Initialize nil values to something meaningful
-      @output||=""
+      @output ||= ""
       return @output
     end
 
@@ -70,7 +71,7 @@ module Patir
     # Returns the error output for the command
     def error
       # Initialize nil values to something meaningful
-      @error||=""
+      @error ||= ""
       return @error
     end
 
@@ -78,7 +79,7 @@ module Patir
     # Returns a backtrace for the command
     def backtrace
       # Initialize nil values to something meaningful
-      @backtrace||=""
+      @backtrace ||= ""
       return @backtrace
     end
 
@@ -86,14 +87,15 @@ module Patir
     # Returns the execution time (duration) for the command
     def exec_time
       # Initialize nil values to something meaningful
-      @exec_time||=0
+      @exec_time ||= 0
       return @exec_time
     end
 
     ##
     # Returns true if the command has finished successfully
     def success?
-      return true if self.status==:success
+      return true if status == :success
+
       return false
     end
 
@@ -107,9 +109,9 @@ module Patir
     # Execute the command and return the status of the command
     #
     # This method should be overridden by classes which include Command.
-    def run context=nil
-      @status=:success
-      return self.status
+    def run(_context = nil)
+      @status = :success
+      return status
     end
 
     ##
@@ -118,11 +120,11 @@ module Patir
     # This method should be called if the class shall be reset to a state as if
     # the command never got executed.
     def reset
-      @backtrace=""
-      @exec_time=0
-      @output=""
-      @error=""
-      @status=:not_executed
+      @backtrace = ""
+      @exec_time = 0
+      @output = ""
+      @error = ""
+      @status = :not_executed
     end
 
     ##
@@ -130,15 +132,16 @@ module Patir
     #
     # This is an alias for #run?.
     def executed?
-      return false if self.status==:not_executed
+      return false if status == :not_executed
+
       return true
     end
 
     ##
     # Returns the command's status
     def status
-      #initialize nil values to something meaningful
-      @status||=:not_executed
+      # Initialize nil values to something meaningful
+      @status ||= :not_executed
       return @status
     end
   end
@@ -709,14 +712,13 @@ module Patir
     #   shall be executed (defaults to the current directory if +nil+)
     # * +block+ - the block which shall be executed upon invocation of the #run
     #   method
-    def initialize name,working_directory=nil,&block
-      @name=name
-      @working_directory=working_directory||"."
-      if block_given?
-        @cmd=block 
-      else
-        raise "You need to provide a block"
-      end
+    def initialize(name, working_directory = nil, &block)
+      @name = name
+      @working_directory = working_directory || "."
+
+      raise "A block must be provided to RubyCommand upon initialization" unless block_given?
+
+      @cmd = block
     end
 
     ##
@@ -724,25 +726,25 @@ module Patir
     #
     # This sets the internal @status variable according to the result of the
     # execution of the block.
-    def run context=nil
-      @context=context
-      @error=""
-      @output=""
-      @backtrace=""
+    def run(context = nil)
+      @context = context
+      @error = ""
+      @output = ""
+      @backtrace = ""
       begin
-        t1=Time.now
+        t1 = Time.now
         Dir.chdir(@working_directory) do
           @cmd.call(self)
-          @status=:success
+          @status = :success
         end
       rescue StandardError
-        @error<<"\n#{$!.message}"
-        @backtrace=$@
-        @status=:error
+        @error << "\n#{$ERROR_INFO.message}"
+        @backtrace = $ERROR_POSITION
+        @status = :error
       ensure
-        @exec_time=Time.now-t1
+        @exec_time = Time.now - t1
       end
-      @context=nil
+      @context = nil
       return @status
     end
   end
