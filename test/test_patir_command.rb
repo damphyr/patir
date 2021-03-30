@@ -7,6 +7,8 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "lib")
 require "minitest/autorun"
 require "patir/command"
 
+##
+# Mock object intended for testing the Patir::Command class
 class MockCommandObject
   include Patir::Command
 end
@@ -27,22 +29,70 @@ class MockCommandError
   end
 end
 
+##
+# Verify functionality of the Patir::Command class
 class TestCommand < Minitest::Test
-  # tests the default values set by the module
-  def test_module
+  ##
+  # Verify that all members are initialized correctly
+  def test_initializations
     obj = MockCommandObject.new
+
     assert_equal("", obj.backtrace)
+    assert_equal("", obj.error)
+    refute(obj.executed?)
+    assert_equal(0, obj.exec_time)
     assert_equal("", obj.name)
-    assert_equal(:not_executed, obj.status)
-    assert(!obj.run?)
-    assert(obj.run)
-    assert(obj.run?)
-    assert_equal(:success, obj.status)
+    assert_nil(obj.number)
     assert_equal("", obj.output)
+    refute(obj.run?)
+    assert_equal(:not_executed, obj.status)
+    assert_nil(obj.strategy)
+    refute(obj.success?)
+  end
+
+  ##
+  # Verify that Patir::Command#reset resets internal state as expected
+  def test_reset
+    obj = MockCommandObject.new
+
+    # Change values which shall be reset
+    obj.error = "Something bad happened exactly here"
+    assert_equal("Something bad happened exactly here", obj.error)
+    obj.exec_time = 382
+    assert_equal(382, obj.exec_time)
+    obj.output = "Hello World!"
+    assert_equal("Hello World!", obj.output)
+    obj.status = :some_new_state
+    assert_equal(:some_new_state, obj.status)
+
+    # Call reset on the object
+    obj.reset
+
+    # Verify expected state
+    assert_equal("", obj.backtrace)
     assert_equal("", obj.error)
     assert_equal(0, obj.exec_time)
-    assert(obj.reset)
+    assert_equal("", obj.output)
     assert_equal(:not_executed, obj.status)
+  end
+
+  ##
+  # Verify that Patir::Command#run changes state as expected
+  def test_run
+    obj = MockCommandObject.new
+    refute(obj.executed?)
+    refute(obj.run?)
+    assert_equal(:not_executed, obj.status)
+    refute(obj.success?)
+
+    # Run once
+    assert_equal(:success, obj.run)
+
+    # Verify expected changed state
+    assert(obj.executed?)
+    assert(obj.run?)
+    assert_equal(:success, obj.status)
+    assert(obj.success?)
   end
 end
 
@@ -235,33 +285,87 @@ class TestCommandSequence < Minitest::Test
   end
 end
 
+##
+# Verify functionality of the Patir::RubyCommand class
 class TestRubyCommand < Minitest::Test
-  include Patir
-  def test_normal_ruby
-    cmd = RubyCommand.new("test") { sleep 1 }
-    assert(cmd.run)
+  ##
+  # Verify that new instances of RubyCommand are created correctly
+  def test_default_initialize
+    cmd = Patir::RubyCommand.new("A command") { sleep 1 }
+    assert_nil(cmd.context)
+    assert_equal("A command", cmd.name)
+    assert_equal(".", cmd.working_directory)
+  end
+
+  ##
+  # Verify that new instances with all parameters of RubyCommand are created
+  # correctly
+  def test_initialize
+    cmd = Patir::RubyCommand.new("Another command", "path/to/some/dir") do
+      sleep 1
+    end
+    assert_nil(cmd.context)
+    assert_equal("Another command", cmd.name)
+    assert_equal("path/to/some/dir", cmd.working_directory)
+  end
+
+  ##
+  # Verify that a valid block invocation is handled as expected
+  def test_normal_execution
+    cmd = Patir::RubyCommand.new("Successful command") { sleep 1 }
+
+    # Check execution and success state before
+    refute(cmd.executed?)
+    refute(cmd.run?)
+    assert_equal(:not_executed, cmd.status)
+    refute(cmd.success?)
+
+    # Run command
+    assert_equal(:success, cmd.run)
+
+    # Check execution and success state after
+    assert(cmd.executed?)
+    assert(cmd.run?)
     assert(cmd.success?, "RubyCommand run unsuccessfuly.")
     assert_equal(:success, cmd.status)
+    assert_in_delta(1.0, cmd.exec_time, 0.1)
   end
 
-  def test_error_ruby
-    cmd = RubyCommand.new("test") { raise "Error" }
-    assert(cmd.run)
-    assert(!cmd.success?, "Successful?!")
+  ##
+  # Verify that errors during block invocation are handled properly
+  def test_erroneous_execution
+    cmd = Patir::RubyCommand.new("Failing command") { raise "Error" }
+
+    # Run command
+    assert_equal(:error, cmd.run)
+
+    # Verify state of the instance
     refute(cmd.backtrace.empty?)
     assert_equal("\nError", cmd.error)
+    assert(cmd.executed?)
+    assert(cmd.run?)
     assert_equal(:error, cmd.status)
+    refute(cmd.success?, "Successful?!")
   end
 
-  def test_context
+  ##
+  # Verify that a context is being handled and passed correctly
+  def test_context_handling
     context = "complex"
-    cmd = RubyCommand.new("test") { |c| c.output = c.context }
-    assert(cmd.run(context))
-    assert(cmd.success?, "Not successful.")
+
+    # Run command
+    cmd = Patir::RubyCommand.new("Context test") { |c| c.output = c.context }
+
+    # Verify successful execution and correct output
+    assert_equal(:success, cmd.run(context))
     assert_equal(context, cmd.output)
-    assert(cmd.run("other"))
-    assert_equal("other", cmd.output)
+    assert(cmd.success?, "Not successful.")
+
+    # Run with different context and verify successful exec and correct output
+    assert_equal(:success, cmd.run("other context"))
+    assert_equal("other context", cmd.output)
     assert_equal(:success, cmd.status)
+    assert(cmd.success?, "Not successful.")
   end
 end
 
