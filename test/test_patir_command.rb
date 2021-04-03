@@ -387,13 +387,58 @@ class TestRubyCommand < Minitest::Test
   end
 end
 
+##
+# Verify functionality of the Patir::CommandSequenceStatus class
 class TestCommandSequenceStatus < Minitest::Test
-  def test_new
-    st = Patir::CommandSequenceStatus.new("sequence")
-    assert(!st.running?)
-    assert(!st.success?)
+  ##
+  # Verify that new instances are initialized correctly
+  def test_initialize
+    st = Patir::CommandSequenceStatus.new("Test Sequence Name")
+
+    # Variables
+    assert_nil(st.sequence_id)
+    assert_equal("Test Sequence Name", st.sequence_name)
+    assert_equal("", st.sequence_runner)
+    assert_in_delta(Time.now, st.start_time)
+    assert_equal(:not_executed, st.status)
+    assert_instance_of(Hash, st.step_states)
+
+    # Methods
+    refute(st.completed?)
+    assert_equal(0, st.exec_time)
+    refute(st.executed?)
+    refute(st.running?)
     assert_equal(:not_executed, st.status)
     assert_nil(st.step_state(3))
+    refute(st.success?)
+  end
+
+  ##
+  # Verify correct response of the running? method
+  def test_running
+    st = Patir::CommandSequenceStatus.new("Test Sequence Name")
+    refute(st.running?)
+    st.status = :running
+    assert(st.running?)
+  end
+
+  ##
+  # Verify that steps are added correctly
+  def test_step_addition
+    st = Patir::CommandSequenceStatus.new("Step Add Sequence")
+    assert_equal(:not_executed, st.status)
+    step = MockCommandObject.new
+    step.exec_time = 94.22
+    step.error = "Oh oh, this shouldn't be"
+    step.name = "Test Step Name"
+    step.output = "Some step output"
+    step.status = :success
+    step.strategy = :fail_always
+    st.step= step
+    assert_equal(:success, st.status)
+    step.status = :running
+    st.step= step
+    assert_equal(:running, st.status)
   end
 
   def test_step_equal
@@ -461,5 +506,14 @@ class TestCommandSequenceStatus < Minitest::Test
     st.step = step4
     assert(st.completed?, "should be complete.")
     refute_nil(st.summary)
+  end
+
+  ##
+  # Verify correct response of the success? method
+  def test_success
+    st = Patir::CommandSequenceStatus.new("Test Sequence Name")
+    refute(st.success?)
+    st.status = :success
+    assert(st.success?)
   end
 end
