@@ -505,29 +505,31 @@ module Patir
     #
     # * +sequence_name+ - a descriptive name for the sequence
     # * +steps+ - optional list of steps which will be passed to #step= each
-    def initialize sequence_name,steps=nil
-      @sequence_name=sequence_name
-      @sequence_runner=""
-      @sequence_id=nil
-      @step_states||=Hash.new
-      #not run yet
-      @status=:not_executed
-      #translate the array of steps as we need it in number=>state form
-      steps.each{|step| self.step=step } if steps
-      @start_time=Time.now
+    def initialize(sequence_name, steps = nil)
+      @sequence_name = sequence_name
+      @sequence_runner = ""
+      @sequence_id = nil
+      @step_states ||= {}
+      # Not run yet
+      @status = :not_executed
+      # Translate the array of steps as it's needed in number => state form
+      steps&.each { |step| self.step = step }
+      @start_time = Time.now
     end
 
     ##
     # Returns +true+ if the represented sequence is currently being executed
     def running?
-      return true if :running==@status
+      return true if @status == :running
+
       return false
     end
 
     ##
     # Returns +true+ if all steps completed successfully
     def success?
-      return true if :success==@status
+      return true if @status == :success
+
       return false
     end
 
@@ -540,13 +542,16 @@ module Patir
     # * in all other cases if none of the steps has a +:not_executed+ or
     #   +:running+ status
     def completed?
-      #this saves us iterating once+1 when no execution took place
-      return false if !self.executed?
+      # This saves us iterating once+1 when no execution took place
+      return false unless executed?
+
       @step_states.each do |state|
-        return true if state[1][:status]==:error && state[1][:strategy]==:fail_on_error
-        return true if state[1][:status]==:warning && state[1][:strategy]==:fail_on_warning
+        return true if state[1][:status] == :error && state[1][:strategy] == :fail_on_error
+        return true if state[1][:status] == :warning && state[1][:strategy] == :fail_on_warning
       end
-      @step_states.each{|state| return false if state[1][:status]==:not_executed || state[1][:status]==:running }
+      @step_states.each do |state|
+        return false if state[1][:status] == :not_executed || state[1][:status] == :running
+      end
       return true
     end
 
@@ -554,8 +559,8 @@ module Patir
     # Query the state of the step with a particular +number+
     #
     # If there is no step with such +number+, then +nil+ is returned.
-    def step_state number
-      s=@step_states[number] if @step_states[number]
+    def step_state(number)
+      s = @step_states[number] if @step_states[number]
       return s
     end
 
@@ -563,52 +568,55 @@ module Patir
     # Add a step
     #
     # The internally held state is updated accordingly.
-    def step=step
-      @step_states[step.number]={:name=>step.name,
-        :status=>step.status,
-        :output=>step.output,
-        :duration=>step.exec_time,
-        :error=>step.error,
-        :strategy=>step.strategy
-      }
-      #this way we don't have to compare all the step states we always get the worst last stable state
+    def step=(step)
+      @step_states[step.number] =
+        {
+          :name => step.name,
+          :status => step.status,
+          :output => step.output,
+          :duration => step.exec_time,
+          :error => step.error,
+          :strategy => step.strategy
+        }
+      # This way we don't have to compare all the step states we always get the
+      # worst last stable state:
       #:not_executed<:success<:warning<:success
-      unless @status==:running
-        @previous_status=@status 
-        case step.status
-        when :running
-          @status=:running
-        when :warning
-          @status=:warning unless @status==:error
-          @status=:error if @previous_status==:error
-        when :error
-          @status=:error
-        when :success
-          @status=:success unless @status==:error || @status==:warning
-          @status=:warning if @previous_status==:warning
-          @status=:error if @previous_status==:error
-        when :not_executed
-          @status=@previous_status
-        end
-      end#unless running
+      return if @status == :running
+
+      @previous_status = @status
+      case step.status
+      when :running
+        @status = :running
+      when :warning
+        @status = :warning unless @status == :error
+        @status = :error if @previous_status == :error
+      when :error
+        @status = :error
+      when :success
+        @status = :success unless @status == :error || @status == :warning
+        @status = :warning if @previous_status == :warning
+        @status = :error if @previous_status == :error
+      when :not_executed
+        @status = @previous_status
+      end
     end
 
     ##
     # Produce a short text summary of this CommandSequenceStatus instance
     def summary
-      sum=""
-      sum<<"#{@sequence_id}:" if @sequence_id
-      sum<<"#{@sequence_name}. " unless @sequence_name.empty?
-      sum<<"Status - #{@status}" 
-      if !@step_states.empty? && @status!=:not_executed
-        sum<<". States #{@step_states.size}\nStep status summary:"
-        sorter=Hash.new
-        @step_states.each do |number,state|
-          #sort them by number
-          sorter[number]="\n\t#{number}:'#{state[:name]}' - #{state[:status]}"
+      sum = ""
+      sum << "#{@sequence_id}:" if @sequence_id
+      sum << "#{@sequence_name}. " unless @sequence_name.empty?
+      sum << "Status - #{@status}"
+      if !@step_states.empty? && @status != :not_executed
+        sum << ". States #{@step_states.size}\nStep status summary:"
+        sorter = {}
+        @step_states.each do |number, state|
+          # Sort them by number
+          sorter[number] = "\n\t#{number}:'#{state[:name]}' - #{state[:status]}"
         end
-        1.upto(sorter.size) {|i| sum<<sorter[i] if sorter[i]}
-      end 
+        1.upto(sorter.size) { |i| sum << sorter[i] if sorter[i] }
+      end
       return sum
     end
 
@@ -625,7 +633,8 @@ module Patir
     ##
     # Return the execution time if it can be computed or +0+ otherwise
     def exec_time
-      return @stop_time-@start_time if @stop_time
+      return @stop_time - @start_time if @stop_time
+
       return 0
     end
 
@@ -644,7 +653,7 @@ module Patir
     ##
     # Alias for the #summary method
     def output
-      return self.summary
+      return summary
     end
 
     ##
@@ -657,7 +666,8 @@ module Patir
     # Returns +true+ if the represented sequence was or is being executed or
     # +false+ otherwise
     def executed?
-      return true unless @status==:not_executed
+      return true unless @status == :not_executed
+
       return false
     end
   end
