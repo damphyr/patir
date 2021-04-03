@@ -168,16 +168,18 @@ module Patir
     # A ParameterException will be raised if the hash passed to +params+ does
     # not contain a +:cmd+ key. A CommandError will be raised if a passed
     # +:working_directory+ does not exist.
-    def initialize params
-      @name=params[:name]
-      @working_directory=params[:working_directory] || "."
-      #we need a command line :)
-      raise ParameterException,"No :command defined" unless params[:cmd]
-      @command=params[:cmd]
-      @status=:not_executed
-      @timeout=params[:timeout]
-      @error=""
-      @output=""
+    def initialize(params)
+      @name = params[:name]
+      @working_directory = params[:working_directory] || "."
+
+      # Passing a commandline through :cmd is mandatory
+      raise ParameterException, "No :command defined" unless params[:cmd]
+
+      @command = params[:cmd]
+      @status = :not_executed
+      @timeout = params[:timeout]
+      @error = ""
+      @output = ""
     end
 
     ##
@@ -185,55 +187,56 @@ module Patir
     #
     # The status of the instance is set to +:success+ only if the command
     # orderly completed execution and set an exit code of +0+.
-    def run context=nil
-      start_time=Time.now
+    def run(_context = nil)
+      start_time = Time.now
       begin
-        #create the working directory if it does not exist
-        FileUtils::mkdir_p(@working_directory,:verbose=>false)
-        #create the actual command, run it, grab stderr and stdout and set output,error, status and execution time
-        if @timeout 
-          exited=nil
-          exitstatus=0
-          status, @output, err = systemu(@command,:cwd=>@working_directory) do |cid|
-              sleep @timeout
-              @error<<"Command timed out after #{@timeout}s"
-              exited=true
-              exitstatus=23
-              begin
-                Process.kill 9,cid
-              rescue => ex
-                @error<<"Failed to kill child process #{cid} after timeout: #{ex.message}"
-              end
+        # Create the working directory if it does not exist
+        FileUtils.mkdir_p(@working_directory, :verbose => false)
+        # Create the actual command, run it, grab stderr and stdout and set
+        # output, error, status and execution time
+        if @timeout
+          exited = nil
+          exitstatus = 0
+          status, @output, err = systemu(@command, :cwd => @working_directory) do |cid|
+            sleep @timeout
+            @error << "Command timed out after #{@timeout}s"
+            exited = true
+            exitstatus = 23
+            begin
+              Process.kill(9, cid)
+            rescue StandardError => e
+              @error << "Failed to kill child process #{cid} after timeout: #{e.message}"
+            end
           end
-          @error<<"\n#{err}" unless err.empty?
+          @error << "\n#{err}" unless err.empty?
         else
-          status, @output, @error = systemu(@command,:cwd=>@working_directory) 
+          status, @output, @error = systemu(@command, :cwd => @working_directory)
           exitstatus = status.exitstatus
         end
         begin
-          exited||= status.exited?
+          exited ||= status.exited?
         rescue NotImplementedError
-          #oh look, it's jruby
-          exited=true
+          # Oh look, it's JRuby
+          exited = true
         end
-        #lets get the status how we want it
+        # Extract and set the status
         if exited
-          if exitstatus ==0
-            @status=:success
+          if exitstatus.zero?
+            @status = :success
           else
-            @status=:error
+            @status = :error
           end
         else
-          @status=:warning
+          @status = :warning
         end
-      rescue
-        #if it blows in systemu it will be nil
-        @error<<"\n#{$!.message}"
-        @error<<"\n#{$!.backtrace}" if $DEBUG
-        @status=:error
+      rescue StandardError
+        # If it blows in systemu it will be nil
+        @error << "\n#{$ERROR_INFO.message}"
+        @error << "\n#{$ERROR_INFO.backtrace}" if $DEBUG
+        @status = :error
       end
-      #set the time it took us
-      @exec_time=Time.now-start_time
+      # Compute and set the execution time
+      @exec_time = Time.now - start_time
       return @status
     end
 
