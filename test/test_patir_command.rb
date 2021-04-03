@@ -96,63 +96,66 @@ class TestCommand < Minitest::Test
   end
 end
 
+##
+# Verify functionality of the Patir::ShellCommand class
 class TestShellCommand < Minitest::Test
-  include Patir
+  ##
+  # Clean-up actions after each test case
   def teardown
     Dir.delete("missing/") if File.exist?("missing/")
   end
 
-  # test the expected behaviour of a succesfull command
+  ##
+  # Verify that a successfully executed command yields the expected results
   def test_echo
-    assert(cmd = ShellCommand.new(:cmd => "echo hello"))
-    assert_instance_of(ShellCommand, cmd)
-    assert(!cmd.run?)
-    assert(!cmd.success?)
-    assert(cmd.run)
-    assert(cmd.run?)
-    assert(cmd.success?)
-    assert_equal("hello", cmd.output.chomp)
+    assert(cmd = Patir::ShellCommand.new(:cmd => "echo hello"))
+    refute(cmd.executed?)
+    refute(cmd.run?)
+    assert_equal(:not_executed, cmd.status)
+    refute(cmd.success?)
+    assert_equal(:success, cmd.run)
     assert_equal("", cmd.error)
-    assert_equal(:success, cmd.status)
-  end
-
-  # test that error status is reported correctly, by testing a command that fails.
-  def test_error
-    assert(cmd = ShellCommand.new(:cmd => "cd /missing"))
-    assert(!cmd.run?)
-    assert(!cmd.success?)
-    assert(cmd.run)
+    assert(cmd.executed?)
+    assert_equal("hello\n", cmd.output)
     assert(cmd.run?)
-    assert(!cmd.success?)
-    assert_equal(:error, cmd.status)
-  end
-
-  # when passed a wroking directory, the command should change into that directory
-  def test_cwd
-    assert(cmd = ShellCommand.new(:cmd => "echo", :working_directory => "missing/"))
-    assert(cmd.run)
+    assert_equal(:success, cmd.status)
     assert(cmd.success?)
   end
 
-  # when the working directory is missing, it should be created when the command is run
-  def test_missing_cwd
-    assert(cmd = ShellCommand.new(:cmd => "echo hello", :working_directory => "missing/"))
-    assert_instance_of(ShellCommand, cmd)
+  ##
+  # Verify that a failed command execution yields the expected results
+  def test_error
+    assert(cmd = Patir::ShellCommand.new(:cmd => "cd /missing"))
+    assert_equal(:error, cmd.run)
+    assert_equal("", cmd.error)
+    assert(cmd.executed?)
+    assert_equal("", cmd.output)
+    assert(cmd.run?)
+    assert_equal(:error, cmd.status)
+    refute(cmd.success?)
+  end
+
+  ##
+  # Verify that a working directory is created if missing
+  def test_cwd
+    assert(cmd = Patir::ShellCommand.new(:cmd => "echo", :working_directory => "missing/"))
     assert_equal(:success, cmd.run)
     assert(cmd.success?)
     assert(File.exist?("missing/"))
   end
 
-  # an exception should be thrown when :cmd is nil
+  ##
+  # Verify that a Patir::ParameterException is thrown if no command is given
   def test_missing_cmd
-    assert_raises(ParameterException) { ShellCommand.new(:working_directory => "missing/") }
+    assert_raises(Patir::ParameterException) do
+      Patir::ShellCommand.new(:working_directory => "missing/")
+    end
   end
 
-  # test with another program
+  ##
+  # Verify that execution is possible for a little more "complex" program
   def test_ls
-    cmd = ShellCommand.new(:cmd => "ls")
-    assert(!cmd.run?)
-    assert(!cmd.success?)
+    cmd = Patir::ShellCommand.new(:cmd => "ls")
     assert(cmd.run)
     assert(cmd.run?)
     if cmd.success?
@@ -162,32 +165,37 @@ class TestShellCommand < Minitest::Test
     end
   end
 
+  ##
+  # Verify that commands are invocations are properly interrupted if the timeout
+  # is exceeded
   def test_timeout
-    cmd = ShellCommand.new(:cmd => "ruby -e 't=0;while t<10 do p t;t+=1;sleep 1 end '", :timeout => 1)
+    cmd = Patir::ShellCommand.new(:cmd => "ruby -e 't=0;while t<10 do p t;t+=1;sleep 1 end '", :timeout => 1)
     assert(cmd.run)
     assert(cmd.run?, "Should be marked as run")
     assert(!cmd.success?, "Should not have been successful")
     assert(!cmd.error.empty?, "There should be an error message")
     # test also for an exit within the timeout
-    cmd = ShellCommand.new(:cmd => "ruby -e 't=0;while t<1 do p t;t+=1;sleep 1 end '", :timeout => 4)
+    cmd = Patir::ShellCommand.new(:cmd => "ruby -e 't=0;while t<1 do p t;t+=1;sleep 1 end '", :timeout => 4)
     assert(cmd.run)
     assert(cmd.run?, "Should be marked as run")
     assert(cmd.success?, "Should have been successful")
     assert(cmd.error.empty?, "There should be no error messages")
   end
 
+  ##
+  # Verify that errors are correctly reported if no callable executable is given
   def test_missing_executable
-    cmd = ShellCommand.new(:cmd => "bla")
-    assert(!cmd.run?)
-    assert(!cmd.success?)
-    assert(cmd.run)
-    assert(!cmd.success?, "Should fail if the executable is missing")
+    cmd = Patir::ShellCommand.new(:cmd => "bla")
+    assert_equal(:error, cmd.run)
+    assert(cmd.run?)
+    refute(cmd.success?)
+    refute(cmd.success?, "Should fail if the executable is missing")
 
-    cmd = ShellCommand.new(:cmd => '"With spaces" and params')
-    assert(!cmd.run?)
-    assert(!cmd.success?)
-    assert(cmd.run)
-    assert(!cmd.success?, "Should fail if the executable is missing")
+    cmd = Patir::ShellCommand.new(:cmd => '"With spaces" and params')
+    assert_equal(:error, cmd.run)
+    assert(cmd.run?)
+    refute(cmd.success?)
+    refute(cmd.success?, "Should fail if the executable is missing")
   end
 end
 
