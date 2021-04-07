@@ -300,28 +300,28 @@ module Patir
     #
     # * +name+ - a descriptive name
     # * +sequence_runner+ - name of the runner executing the sequence
-    def initialize name,sequence_runner=""
-      @name=name
-      @steps||=Array.new
-      @sequence_runner=sequence_runner
-      #intialize the status for the currently active build (not executed)
+    def initialize(name, sequence_runner = "")
+      @name = name
+      @steps ||= []
+      @sequence_runner = sequence_runner
+      # Intialize the status for the currently active build (not executed)
       reset
     end
 
     ##
     # Set the internal +sequence_runner+ attribute and update the internally
     # held CommandSequenceStatus instance
-    def sequence_runner=name
-      @sequence_runner=name
-      @state.sequence_runner=name
+    def sequence_runner=(name)
+      @sequence_runner = name
+      @state.sequence_runner = name
     end
 
     ##
     # Set the internal +sequence_id+ attribute and update the internally held
     # CommandSequenceStatus instance
-    def sequence_id=name
-      @sequence_id=name
-      @state.sequence_id=name
+    def sequence_id=(name)
+      @sequence_id = name
+      @state.sequence_id = name
     end
 
     ##
@@ -329,57 +329,57 @@ module Patir
     #
     # This will run all step instances in the sequence observing the exit
     # strategies of each command on warnings or failures.
-    def run context=nil
-      #set the start time
-      @state.start_time=Time.now
-      #reset the stop time
-      @state.stop_time=nil
-      #we started running, lets tell the world
-      @state.status=:running
-      notify(:sequence_status=>@state)
-      #we are optimistic
-      running_status=:success
-      #but not that much
-      running_status=:warning if @steps.empty?
-      #execute the steps in sequence
+    def run(context = nil)
+      # Set the start time
+      @state.start_time = Time.now
+      # Reset the stop time
+      @state.stop_time = nil
+      # Running started, tell the world
+      @state.status = :running
+      notify(:sequence_status => @state)
+      # Be optimistic
+      running_status = :success
+      # But not that much
+      running_status = :warning if @steps.empty?
+      # Execute the steps in sequence
       @steps.each do |step|
-        #the step is running, tell the world
-        @state.step=step
-        step.status=:running
-        notify(:sequence_status=>@state)
-        #run it, get the result and notify
-        result=step.run(context)
-        @state.step=step
-        step.status=:running
-        notify(:sequence_status=>@state)
-        #evaluate the results' effect on execution status at the end
+        # The step is running, tell the world
+        @state.step = step
+        step.status = :running
+        notify(:sequence_status => @state)
+        # Run it, get the result and notify
+        result = step.run(context)
+        @state.step = step
+        step.status = :running
+        notify(:sequence_status => @state)
+        # Evaluate the results' effect on the execution status at the end
         case result
         when :success
-          #everything is fine, continue
+          # Everything is fine, continue
         when :error
-          #this will be the final status
-          running_status=:error
-          #stop if we fail on error
-          if :fail_on_error==step.strategy
-            @state.status=:error
-            break 
+          # This will be the final status
+          running_status = :error
+          # Stop if we fail on error
+          if :fail_on_error == step.strategy
+            @state.status = :error
+            break
           end
         when :warning
-          #a previous failure overrides a warning
-          running_status=:warning unless :error==running_status
-          #escalate this to a failure if the strategy says so
-          running_status=:error if :flunk_on_warning==step.strategy
-          #stop if we fail on warning
-          if :fail_on_warning==step.strategy
-            @state.status=:error
-            break 
+          # A previous failure overrides a warning
+          running_status = :warning unless :error == running_status
+          # Escalate this to a failure if the strategy says so
+          running_status = :error if :flunk_on_warning == step.strategy
+          # Stop if we fail on warning
+          if :fail_on_warning == step.strategy
+            @state.status = :error
+            break
           end
         end
-      end#each step
-      #we finished
-      @state.stop_time=Time.now
-      @state.status=running_status
-      notify(:sequence_status=>@state)
+      end
+      # We finished
+      @state.stop_time = Time.now
+      @state.status = running_status
+      notify(:sequence_status => @state)
     end
 
     ##
@@ -395,20 +395,20 @@ module Patir
     # * +:fail_on_warning+ - CommandSequence terminates on warnings of the step
     # * +:flunk_on_warning+ - CommandSequence is flagged as failed on warning in
     #   this step but continues
-    def add_step step,exit_strategy=:fail_on_error
-      #duplicate the command
-      bstep=step.dup
-      #reset it
+    def add_step(step, exit_strategy = :fail_on_error)
+      # duplicate the command
+      bstep = step.dup
+      # reset it
       bstep.reset
-      #set the extended attributes
-      bstep.number=@steps.size
-      exit_strategy = :fail_on_error unless [:flunk_on_error,:fail_on_warning,:flunk_on_warning].include?(exit_strategy)
-      bstep.strategy=exit_strategy
-      #add it to the lot
-      @steps<<bstep
-      #add it to status as well
-      @state.step=bstep
-      notify(:sequence_status=>@state)
+      # set the extended attributes
+      bstep.number = @steps.size
+      exit_strategy = :fail_on_error unless [:flunk_on_error, :fail_on_warning, :flunk_on_warning].include?(exit_strategy)
+      bstep.strategy = exit_strategy
+      # add it to the lot
+      @steps << bstep
+      # add it to status as well
+      @state.step = bstep
+      notify(:sequence_status => @state)
       return bstep
     end
 
@@ -418,22 +418,22 @@ module Patir
     # This will set the status to +:not_executed+, reset all added steps and set
     # the start and end times to +nil+.
     def reset
-      #reset all the steps (stati and execution times)
-      @steps.each{|step| step.reset}
-      #reset the status
-      @state=CommandSequenceStatus.new(@name)
-      @steps.each{|step| @state.step=step}
-      @state.start_time=Time.now
-      @state.stop_time=nil
-      @state.sequence_runner=@sequence_runner
-      #tell the world
-      notify(:sequence_status=>@state)
+      # reset all the steps (stati and execution times)
+      @steps.each { |step| step.reset }
+      # reset the status
+      @state = CommandSequenceStatus.new(@name)
+      @steps.each { |step| @state.step = step }
+      @state.start_time = Time.now
+      @state.stop_time = nil
+      @state.sequence_runner = @sequence_runner
+      # tell the world
+      notify(:sequence_status => @state)
     end
 
     ##
     # Returns +true+ if the sequence finished its execution
-    def completed?  
-      return @state.completed? 
+    def completed?
+      return @state.completed?
     end
 
     ##
@@ -443,14 +443,14 @@ module Patir
     #
     #     <sequence_id>:<name> on <sequence_runner>, <step_qty> steps
     def to_s
-      "#{sequence_id}:#{:name} on #{@sequence_runner}, #{@steps.size} steps"
+      "#{sequence_id}:name on #{@sequence_runner}, #{@steps.size} steps"
     end
 
     private
 
     ##
     # Notify observers of changes
-    def notify *params
+    def notify(*params)
       changed
       notify_observers(*params)
     end
