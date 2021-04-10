@@ -5,11 +5,14 @@ Rakefile
 lib/patir/base.rb
 lib/patir/command.rb
 lib/patir/configuration.rb
+test/samples/another_config.cfg
 test/samples/chain.cfg
+test/samples/chain_some_config.cfg
 test/samples/config_fail.cfg
 test/samples/empty.cfg
 test/samples/failed.cfg
 test/samples/failed_unknown.cfg
+test/samples/some_config.cfg
 test/samples/syntax.cfg
 test/test_patir_base.rb
 test/test_patir_command.rb
