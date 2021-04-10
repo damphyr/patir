@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2012 Vassilis Rizopoulos. All rights reserved.
+# Copyright (c) 2007-2021 Vassilis Rizopoulos. All rights reserved.
 
 require "English"
 require 'observer'
