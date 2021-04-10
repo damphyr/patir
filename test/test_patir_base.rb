@@ -61,6 +61,7 @@ class TestBase < Minitest::Test
       { :arg => nil, :lvl => Logger::INFO },
       # Check all Logger::Severity values
       { :arg => Logger::DEBUG, :lvl => Logger::DEBUG },
+      { :arg => Logger::ERROR, :lvl => Logger::ERROR },
       { :arg => Logger::FATAL, :lvl => Logger::FATAL },
       { :arg => Logger::INFO, :lvl => Logger::INFO },
       { :arg => Logger::UNKNOWN, :lvl => Logger::UNKNOWN },
