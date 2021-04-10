@@ -11,11 +11,12 @@ require "patir/base"
 # Verify the basic functionality contained directly in the Patir module
 class TestBase < Minitest::Test
   ##
-  # Path to temporary file used for logging tests
+  # Path to a temporary file used for logging tests
   TEMP_LOG = "temp.log"
+  private_constant(:TEMP_LOG)
 
   ##
-  # Clean-up actions after completed tests
+  # Clean-up actions after completed test cases
   def teardown
     File.delete(TEMP_LOG) if File.exist?(TEMP_LOG)
   end
@@ -37,7 +38,7 @@ class TestBase < Minitest::Test
   # Verify correct setup of the logger with default arguments
   def test_setup_logger_call_with_defaults
     logger = Patir.setup_logger
-    assert_kind_of(Patir::PatirLoggerFormatter, logger.formatter)
+    assert_instance_of(Patir::PatirLoggerFormatter, logger.formatter)
     assert_equal(Logger::INFO, logger.level)
   end
 
@@ -45,10 +46,10 @@ class TestBase < Minitest::Test
   # Verify that the log output is being handled correctly
   def test_setup_logger_file_handling
     logger = Patir.setup_logger(nil)
-    assert_kind_of(Logger, logger)
+    assert_instance_of(Logger, logger)
     refute(File.exist?(TEMP_LOG), "Log file created")
     logger = Patir.setup_logger("temp.log")
-    assert_kind_of(Logger, logger)
+    assert_instance_of(Logger, logger)
     assert(File.exist?(TEMP_LOG), "Log file not created")
     logger.close
   end
@@ -86,15 +87,24 @@ class TestPatirLoggerFormatter < Minitest::Test
   def test_formatting
     formatter = Patir::PatirLoggerFormatter.new
 
-    assert_match(/^\[\d{8} \d{2}:\d{2}:\d{2}\]\s+\d+: Some vain information\n$/,
+    # Try some Logger::Severity enumerators
+    assert_match(/^\[\d{8} \d{2}:\d{2}:\d{2}\]     0: Some vain information\n$/,
                  formatter.call(Logger::DEBUG, Time.now, "IGNORED",
                                 "Some vain information"))
-    assert_match(/^\[\d{8} \d{2}:\d{2}:\d{2}\]\s+\d+: Some bad information\n$/,
+    assert_match(/^\[\d{8} \d{2}:\d{2}:\d{2}\]     4: Some bad information\n$/,
                  formatter.call(Logger::FATAL, Time.now, "IGNORED",
                                 "Some bad information"))
-    assert_match(/^\[\d{8} \d{2}:\d{2}:\d{2}\]\s+\d+: Some information\n$/,
+    assert_match(/^\[\d{8} \d{2}:\d{2}:\d{2}\]     1: Some information\n$/,
                  formatter.call(Logger::INFO, Time.now, "IGNORED",
                                 "Some information"))
+
+    # Try random integers (small and big)
+    assert_match(/^\[\d{8} \d{2}:\d{2}:\d{2}\]   291: Ugh, what's this\?\n$/,
+                 formatter.call(291, Time.now, "IGNORED",
+                                "Ugh, what's this?"))
+    assert_match(/^\[\d{8} \d{2}:\d{2}:\d{2}\] 2125916: Wow, that must be pretty important\n$/,
+                 formatter.call(2125916, Time.now, "IGNORED",
+                                "Wow, that must be pretty important"))
   end
 
   ##
@@ -109,7 +119,8 @@ end
 ##
 # Verify functionality of the Patir::Version module
 class TestVersion < Minitest::Test
-  # Verify that the string representation is properly created
+  ##
+  # Verify that the version's string representation is created correctly
   def test_string_representation
     assert_equal("0.9.1", Patir::Version::STRING)
   end
