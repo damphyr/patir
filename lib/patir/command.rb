@@ -1,10 +1,10 @@
 # Copyright (c) 2007-2021 Vassilis Rizopoulos. All rights reserved.
 
 require "English"
-require 'observer'
-require 'fileutils'
-require 'systemu'
-require 'patir/base'
+require "observer"
+require "fileutils"
+require "systemu"
+require "patir/base"
 
 module Patir
   ##
@@ -360,17 +360,17 @@ module Patir
           # This will be the final status
           running_status = :error
           # Stop if we fail on error
-          if :fail_on_error == step.strategy
+          if step.strategy == :fail_on_error
             @state.status = :error
             break
           end
         when :warning
           # A previous failure overrides a warning
-          running_status = :warning unless :error == running_status
+          running_status = :warning unless running_status == :error
           # Escalate this to a failure if the strategy says so
-          running_status = :error if :flunk_on_warning == step.strategy
+          running_status = :error if step.strategy == :flunk_on_warning
           # Stop if we fail on warning
-          if :fail_on_warning == step.strategy
+          if step.strategy == :fail_on_warning
             @state.status = :error
             break
           end
@@ -419,7 +419,7 @@ module Patir
     # the start and end times to +nil+.
     def reset
       # reset all the steps (stati and execution times)
-      @steps.each { |step| step.reset }
+      @steps.each(&:reset)
       # reset the status
       @state = CommandSequenceStatus.new(@name)
       @steps.each { |step| @state.step = step }
