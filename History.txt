@@ -1,3 +1,11 @@
+==0.9.1 / YYYY-mm-dd
+* Add backtrace functionality to Command module and RubyCommand class
+* Drop unused @run member from RubyCommand
+* Enable utilization of all Logger::Severity enumerators with setup_logger
+* Fix most RuboCop offenses throughout codebase
+* Increase documentation coverage to 100%
+* Update development dependencies
+
 ==0.9.0 / 2016-02-08
 * Switched to minitest
 * Updated all gem dependencies
