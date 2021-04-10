@@ -110,6 +110,6 @@ end
 class TestVersion < Minitest::Test
   # Verify that the string representation is properly created
   def test_string_representation
-    assert_equal("0.9.0", Patir::Version::STRING)
+    assert_equal("0.9.1", Patir::Version::STRING)
   end
 end

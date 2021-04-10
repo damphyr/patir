@@ -31,7 +31,7 @@ module Patir
     MINOR = 9
     ##
     # The tiny version of the Patir gem
-    TINY = 0
+    TINY = 1
     ##
     # The version information of the Patir gem as a string
     STRING = [MAJOR, MINOR, TINY].join(".")
