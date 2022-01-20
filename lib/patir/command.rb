@@ -211,8 +211,8 @@ module Patir
           @error << "\n#{err}" unless err.empty?
         else
           status, @output, @error = systemu(@command, :cwd => @working_directory)
-          exitstatus = status.exitstatus
         end
+        exitstatus = status.exitstatus
         begin
           exited ||= status.exited?
         rescue NotImplementedError
