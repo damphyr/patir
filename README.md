@@ -1,6 +1,6 @@
 # patir
 
-[![Build Status](https://secure.travis-ci.org/damphyr/patir.png)](http://travis-ci.org/damphyr/patir)
+[![CircleCI](https://circleci.com/gh/damphyr/patir/tree/main.svg?style=svg)](https://circleci.com/gh/damphyr/patir/tree/main)
 
 [patir](http://patir.rubyforge.org) provides code to enable project automation tasks:
 
