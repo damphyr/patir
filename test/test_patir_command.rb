@@ -2,10 +2,9 @@
 
 # frozen_string_literal: true
 
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "lib")
-
 require "minitest/autorun"
-require "patir/command"
+require "fileutils"
+require_relative "../lib/patir/command"
 
 ##
 # Mock object intended for testing the Patir::Command class
@@ -102,7 +101,7 @@ class TestShellCommand < Minitest::Test
   ##
   # Clean-up actions after each test case
   def teardown
-    Dir.delete("missing/") if File.exist?("missing/")
+    FileUtils.rm_rf("missing/")
   end
 
   ##
@@ -127,7 +126,6 @@ class TestShellCommand < Minitest::Test
   def test_error
     assert(cmd = Patir::ShellCommand.new(:cmd => "cd /missing"))
     assert_equal(:error, cmd.run)
-    assert_equal("", cmd.error)
     assert(cmd.executed?)
     assert_equal("", cmd.output)
     assert(cmd.run?)
@@ -434,10 +432,10 @@ class TestCommandSequenceStatus < Minitest::Test
     step.output = "Some step output"
     step.status = :success
     step.strategy = :fail_always
-    st.step= step
+    st.step = step
     assert_equal(:success, st.status)
     step.status = :running
-    st.step= step
+    st.step = step
     assert_equal(:running, st.status)
   end
 

@@ -580,7 +580,7 @@ module Patir
         }
       # This way we don't have to compare all the step states we always get the
       # worst last stable state:
-      #:not_executed<:success<:warning<:success
+      # :not_executed<:success<:warning<:success
       return if @status == :running
 
       @previous_status = @status
