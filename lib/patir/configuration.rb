@@ -48,10 +48,10 @@ module Patir
   #         @name = tool_name
   #       end
   #     end
-  #     
+  #
   #     class SimpleConfigurator
   #       include SimpleConfiguration
-  #       
+  #
   #       def configuration
   #         return @name
   #       end

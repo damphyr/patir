@@ -127,7 +127,7 @@ class TestShellCommand < Minitest::Test
   def test_error
     assert(cmd = Patir::ShellCommand.new(:cmd => "cd /missing"))
     assert_equal(:error, cmd.run)
-    assert_equal("", cmd.error)
+    assert(!cmd.error.empty?, "No error output")
     assert(cmd.executed?)
     assert_equal("", cmd.output)
     assert(cmd.run?)
@@ -434,10 +434,10 @@ class TestCommandSequenceStatus < Minitest::Test
     step.output = "Some step output"
     step.status = :success
     step.strategy = :fail_always
-    st.step= step
+    st.step = step
     assert_equal(:success, st.status)
     step.status = :running
-    st.step= step
+    st.step = step
     assert_equal(:running, st.status)
   end
 

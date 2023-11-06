@@ -2,10 +2,9 @@
 
 # frozen_string_literal: true
 
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "lib")
-
 require "minitest/autorun"
-require "patir/base"
+require "fileutils"
+require_relative "../lib/patir/base"
 
 ##
 # Verify the basic functionality contained directly in the Patir module
@@ -18,7 +17,7 @@ class TestBase < Minitest::Test
   ##
   # Clean-up actions after completed test cases
   def teardown
-    File.delete(TEMP_LOG) if File.exist?(TEMP_LOG)
+    FileUtils.rm_rf(TEMP_LOG)
   end
 
   ##
