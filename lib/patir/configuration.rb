@@ -143,12 +143,12 @@ module Patir
     rescue SyntaxError
       # Just wrap the exception so we can differentiate
       @logger.debug($ERROR_INFO)
-      raise ConfigurationException.new, \
+      raise ConfigurationException.new,
             "Syntax error in the configuration file '#{filename}':\n" \
             "#{$ERROR_INFO.message}"
     rescue NoMethodError
       @logger.debug($ERROR_INFO)
-      raise ConfigurationException.new, \
+      raise ConfigurationException.new,
             "Encountered an unknown directive in configuration file '#{filename}':" \
             "\n#{$ERROR_INFO.message}"
     rescue StandardError

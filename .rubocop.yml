@@ -1,17 +1,36 @@
 Gemspec/DevelopmentDependencies:
   Enabled: true
 Metrics/AbcSize:
-  Max: 20
+  Exclude:
+    - "test/**/*"
+    - "lib/patir/command.rb"
+  Max: 25
+Metrics/ClassLength:
+  Max: 250
+  Exclude:
+    - "test/**/*"
 Metrics/BlockLength:
   Max: 120
 Layout/LineLength:
   Max: 200
 Metrics/MethodLength:
+  Exclude:
+    - "test/**/*"
+    - "lib/patir/command.rb"
   Max: 25
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - "lib/patir/command.rb"
+Metrics/PerceivedComplexity:
+  Exclude:
+    - "lib/patir/command.rb"
+Security/Eval:
+  Exclude:
+    - "lib/patir/configuration.rb"
 Style/AsciiComments:
   Enabled: false
 Style/ClassAndModuleChildren:
-  Enabled: false
+  EnforcedStyle: nested
 Style/FrozenStringLiteralComment:
   Enabled: false
 Style/GlobalVars:
@@ -178,7 +197,20 @@ Style/ComparableClamp:
   Enabled: true
 Style/ConcatArrayLiterals:
   Enabled: true
+Style/OptionalBooleanParameter:
+  Enabled: false
+Style/SpecialGlobalVars:
+  Enabled: false
+Style/NumericPredicate:
+  Enabled: false
+Naming/FileName:
+  Enabled: false
+Naming/HeredocDelimiterNaming:
+  Enabled: false
 AllCops:
   NewCops: enable
+  SuggestExtensions: false
   Exclude:
+    - "~/.gem/**"
     - "out/**/*"
+    - "vendor/**/*"

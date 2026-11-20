@@ -14,6 +14,7 @@ end
 
 class MockCommandWarning
   include Patir::Command
+
   def run(_context = nil)
     @status = :warning
     return :warning
@@ -22,6 +23,7 @@ end
 
 class MockCommandError
   include Patir::Command
+
   def run(_context = nil)
     @status = :error
     return :error
@@ -199,6 +201,7 @@ end
 
 class TestCommandSequence < Minitest::Test
   include Patir
+
   def setup
     @echo = ShellCommand.new(:cmd => "echo hello")
     @void = MockCommandObject.new

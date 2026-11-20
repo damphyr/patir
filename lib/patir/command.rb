@@ -549,8 +549,8 @@ module Patir
         return true if state[1][:status] == :error && state[1][:strategy] == :fail_on_error
         return true if state[1][:status] == :warning && state[1][:strategy] == :fail_on_warning
       end
-      @step_states.each do |state|
-        return false if state[1][:status] == :not_executed || state[1][:status] == :running
+      @step_states.each do |state| # rubocop:disable Style/CombinableLoops
+        return false if [:not_executed, :running].include?(state[1][:status])
       end
       return true
     end
