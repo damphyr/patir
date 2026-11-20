@@ -13,6 +13,7 @@ Hoe.spec("patir") do |prj|
   prj.local_rdoc_dir = "doc/rdoc"
   prj.readme_file = "README.md"
   prj.extra_deps << ["systemu", "~>2.6"]
+  prj.extra_deps << ["logger", "~>1.6"]
   prj.extra_deps << ["observer", "~>0.1"]
 end
 

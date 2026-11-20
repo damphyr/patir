@@ -8,6 +8,7 @@ GEM
     json (3.1.0)
     language_server-protocol (3.17.0.6)
     lint_roller (1.1.0)
+    logger (1.7.0)
     minitest (6.1.0)
       drb (~> 2.0)
       prism (>= 1.5, < 3)
@@ -49,6 +50,7 @@ PLATFORMS
 
 DEPENDENCIES
   hoe (~> 4.7)
+  logger (~> 1.6)
   minitest (~> 6.0)
   observer (~> 0.1)
   rubocop (~> 1.57)
